@@ -1,0 +1,21 @@
+# Docker pokreće samo razvojnu bazu; web i API pokrećemo npm komandama.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: terapeut
+      POSTGRES_USER: terapeut
+      POSTGRES_PASSWORD: local-development-only
+    ports:
+      - "127.0.0.1:5432:5432"
+    # Prvi volume čuva podatke. SQL se automatski pokreće samo pri kreiranju nove baze.
+    volumes:
+      - terapeut_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U terapeut -d terapeut"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  terapeut_data:

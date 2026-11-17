@@ -7,8 +7,16 @@ import {
   MapPin,
   ArrowUpRight,
   CalendarDays,
+  CircleCheck,
+  CircleAlert,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  useEffect,
+  useState,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
 import type { BookingStatus, Therapist } from "@terapeut/domain";
 import { useDemo } from "@/lib/demo-context";
 /** Prikazuje inicijale terapeuta na obojenoj podlozi; dekoracija nema poslovnu logiku. */
@@ -19,15 +27,27 @@ export function Avatar({
   therapist: Therapist;
   large?: boolean;
 }) {
+  const [failedImage, setFailedImage] = useState("");
+  const photo = therapist.photos?.[0];
+  /** Vraća inicijale ako fotografija više nije dostupna. */
+  function handleImageError() {
+    setFailedImage(photo?.url || "");
+  }
   return (
     <div
       className={`avatar ${therapist.color} ${large ? "large" : ""}`}
       aria-hidden="true"
     >
-      <span>{therapist.initials}</span>
-      <svg viewBox="0 0 100 100">
-        <path d="M-10 90Q50 10 110 90M-10 100Q50 30 110 100" />
-      </svg>
+      {photo && photo.url !== failedImage ? (
+        <img src={photo.url} alt="" onError={handleImageError} />
+      ) : (
+        <>
+          <span>{therapist.initials}</span>
+          <svg viewBox="0 0 100 100">
+            <path d="M-10 90Q50 10 110 90M-10 100Q50 30 110 100" />
+          </svg>
+        </>
+      )}
     </div>
   );
 }
@@ -171,11 +191,126 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
     </span>
   );
 }
+/** Crta dekorativni spinner; tekst uz njega objašnjava korisniku šta se čeka. */
+export function Spinner() {
+  return <span className="spinner" aria-hidden="true" />;
+}
+
+interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  pending: boolean;
+  pendingText?: string;
+}
+
+/** Zadržava obična svojstva dugmeta; tokom zahtjeva dodaje spinner i blokira novi klik. */
+export function ActionButton({
+  pending,
+  pendingText,
+  disabled,
+  children,
+  ...buttonProperties
+}: ActionButtonProps) {
+  // Ostala svojstva su obični type, className i onClick koje dobija i HTML button.
+  return (
+    <button
+      {...buttonProperties}
+      disabled={disabled || pending}
+      aria-busy={pending}
+    >
+      {pending && <Spinner />}
+      {pending && pendingText ? pendingText : children}
+    </button>
+  );
+}
+
+/** Najavljuje čekanje čitaču ekrana; prikazuje se samo za aktivnu korisničku radnju. */
+export function PendingStatus({ children }: { children: ReactNode }) {
+  return (
+    <p className="pending-status" role="status">
+      <Spinner />
+      {children}
+    </p>
+  );
+}
+
+/** Uspjeh prikazuje četiri sekunde; greške i čekanje traju dok ih roditelj ne promijeni. */
+export function SaveFeedback({
+  kind,
+  title,
+  children,
+}: {
+  kind: "pending" | "success" | "error";
+  title: string;
+  children?: ReactNode;
+}) {
+  const [visible, setVisible] = useState(true);
+
+  // Timer utiče samo na poruku. Sačuvane podatke i stanje zahtjeva ne mijenjamo.
+  useEffect(() => {
+    setVisible(true);
+    if (kind !== "success") return;
+    /** Sakriva potvrdu poslije četiri sekunde, bez brisanja podataka iz formulara ili baze. */
+    function hideSuccess() {
+      setVisible(false);
+    }
+    const timer = window.setTimeout(hideSuccess, 4000);
+    /** Uklanja stari timer pri novoj poruci ili zatvaranju komponente. */
+    function stopTimer() {
+      window.clearTimeout(timer);
+    }
+    return stopTimer;
+  }, [kind, title]);
+
+  if (!visible) return null;
+  return (
+    <div
+      className={`save-feedback save-feedback-${kind}`}
+      role={kind === "error" ? "alert" : "status"}
+      aria-atomic="true"
+    >
+      {kind === "pending" ? (
+        <Spinner />
+      ) : kind === "success" ? (
+        <CircleCheck size={22} aria-hidden="true" />
+      ) : (
+        <CircleAlert size={22} aria-hidden="true" />
+      )}
+      <div>
+        <strong>{title}</strong>
+        {kind !== "success" && children && <p>{children}</p>}
+      </div>
+    </div>
+  );
+}
+
+/** Prikazuje prepoznatljiv loader profila; ukrasne linije nijesu stvarni korisnički podaci. */
+export function ProfileLoading() {
+  const { translate } = useDemo();
+  return (
+    <div className="profile-loading" role="status" aria-live="polite">
+      <div className="profile-loading-title">
+        <Spinner />
+        <strong>{translate("Učitavanje profila…", "Loading profile…")}</strong>
+      </div>
+      <p>
+        {translate(
+          "Pripremamo podatke profila. Molimo sačekajte.",
+          "Preparing profile details. Please wait.",
+        )}
+      </p>
+      <div className="profile-loading-lines" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
+  );
+}
+
 /** Prikazuje poruku i indikator dok podaci ili stranica nijesu spremni. */
 export function Loading() {
   return (
     <div className="loading" role="status">
-      <span className="spinner" />
+      <Spinner />
       Učitavanje / Loading…
     </div>
   );

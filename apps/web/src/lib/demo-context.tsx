@@ -38,7 +38,11 @@ interface DemoContextType {
   translate: (mne: string, en: string) => string;
   notice: string;
   setLocale: (locale: Locale) => void;
-  request: (therapistId: string, input: RequestInput) => Booking;
+  request: (
+    therapistId: string,
+    input: RequestInput,
+    profileSnapshot?: Therapist,
+  ) => Booking;
   respond: (
     id: string,
     action: BookingAction,
@@ -173,13 +177,27 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     writeLocale(language);
   }
   /** Poziva poslovnu provjeru iz domain paketa i čuva novu listu sa nastalim zahtjevom. */
-  function createRequest(therapistId: string, input: RequestInput): Booking {
+  function createRequest(
+    therapistId: string,
+    input: RequestInput,
+    profileSnapshot?: Therapist,
+  ): Booking {
     const currentState = getCurrentState();
-    const therapist = findTherapist(currentState, therapistId);
+    const therapist =
+      profileSnapshot || findTherapist(currentState, therapistId);
+    if (therapist.id !== therapistId)
+      throw new DomainError("THERAPIST_NOT_FOUND");
     const booking = requestBooking(therapist, input, currentState.bookings);
     saveState({
       ...currentState,
       bookings: [booking, ...currentState.bookings],
+      // Kopija DB profila služi samo lokalnom demo zahtjevu; javni katalog je uvijek iz API-ja.
+      therapists: [
+        ...currentState.therapists.filter(
+          (profile) => profile.id !== therapistId,
+        ),
+        therapist,
+      ],
     });
     return booking;
   }

@@ -5,9 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, ArrowRight } from "lucide-react";
 import { useDemo } from "@/lib/demo-context";
 import { TherapistCard, Loading } from "@/components/ui";
+import { useDirectory } from "@/lib/directory-context";
+import { DirectoryError } from "@/components/directory-error";
 /** Čita URL filtere i prikazuje samo aktivne profile koji zadovoljavaju pretragu. */
 export function Directory() {
-  const { state, translate, locale } = useDemo();
+  const { translate, locale } = useDemo();
+  const { therapists, loading, error } = useDirectory();
   const params = useSearchParams();
   const router = useRouter();
   const q = params.get("q") || "";
@@ -66,17 +69,18 @@ export function Directory() {
     }
     return true;
   }
-  const results = state?.therapists.filter(matchesFilters);
+  const results = therapists.filter(matchesFilters);
   results?.sort((first, second) =>
     first.name.localeCompare(second.name, locale === "mne" ? "sr-Latn" : "en"),
   );
   const cities: string[] = [];
-  for (const therapist of state?.therapists || []) {
+  for (const therapist of therapists) {
     if (!cities.includes(therapist.city)) {
       cities.push(therapist.city);
     }
   }
   cities.sort();
+  if (error) return <DirectoryError />;
   return (
     <div className="container page-space">
       <div className="page-intro">
@@ -196,7 +200,7 @@ export function Directory() {
             </p>
             <span>{translate("Po abecednom redu", "Alphabetical order")}</span>
           </div>
-          {!state ? (
+          {loading ? (
             <Loading />
           ) : results?.length ? (
             <div className="therapist-grid directory-cards">
@@ -233,8 +237,8 @@ export function Directory() {
           )}
           <p className="sample-note">
             {translate(
-              "Probni podaci · Profili su izmišljeni.",
-              "Sample data · These profiles are fictional.",
+              "Profili se učitavaju iz baze. U lokalnoj verziji postoje i probni stručnjaci.",
+              "Profiles are loaded from the database. The local version also includes sample professionals.",
             )}
           </p>
         </section>

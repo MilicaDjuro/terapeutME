@@ -1,313 +1,248 @@
-// Klijentski tok: usluga → datum/vrijeme → kontakt → novi zahtjev na čekanju.
 "use client";
-import { useState, type FormEvent } from "react";
+import { useCallback, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarDays,
-  Check,
-  Clock3,
-  Info,
-  MapPin,
-  ShieldCheck,
-} from "lucide-react";
-import {
-  addDays,
-  availableStarts,
-  Booking,
   dateKey,
   timeLabel,
+  availableStarts,
+  addDays,
+  type Booking,
 } from "@terapeut/domain";
+import { useAuth } from "@/lib/auth-context";
 import { useDemo } from "@/lib/demo-context";
-import { errorText } from "@/lib/errors";
-import { formatDate } from "@/lib/format";
-import { Avatar, Loading, Price, Verified } from "@/components/ui";
-import { CalendarPicker } from "@/components/calendar-picker";
-/** Vodi klijenta kroz uslugu, kalendar i kontakt, pa prikazuje rezultat slanja. */
+import { useDirectory } from "@/lib/directory-context";
+import { authErrorMessage } from "@/lib/auth-client";
+import { requestBookingApi } from "@/lib/booking-client";
+import {
+  ActionButton,
+  Avatar,
+  Loading,
+  Price,
+  PendingStatus,
+} from "@/components/ui";
+import { DirectoryError } from "@/components/directory-error";
+import { ServerCalendar } from "@/components/server-calendar";
+import { WaitlistForm } from "./waitlist";
+
+/** Vodi prijavljenog pacijenta kroz seansu i živi kalendar; konačnu dostupnost provjerava server. */
 export function BookingFlow({ id }: { id: string }) {
-  const { state, request, translate, locale } = useDemo();
+  const { user, loading: authLoading } = useAuth();
+  const { translate } = useDemo();
+  const {
+    therapists,
+    loading,
+    error: directoryError,
+    refresh,
+  } = useDirectory();
   const [serviceId, setServiceId] = useState("");
-  const [selectedDate, setSelectedDate] = useState(dateKey());
-  const [selectedStart, setSelectedStart] = useState<number | null>(null);
+  const [date, setDate] = useState(dateKey());
+  const [start, setStart] = useState<number | null>(null);
+  const [waitlistStart, setWaitlistStart] = useState<number | null>(null);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<Booking | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  if (!state) return <Loading />;
-  const therapist = state.therapists.find(
-    (candidateTherapist) =>
-      candidateTherapist.id === id && candidateTherapist.active,
+  const [success, setSuccess] = useState<Booking | null>(null);
+  const inProgress = useRef(false);
+  const handleUnavailable = useCallback(
+    /** Briše izbor koji je drugi klijent u međuvremenu zauzeo. */
+    function handleUnavailable() {
+      setStart(null);
+    },
+    [],
   );
-  if (!therapist || !therapist.acceptingClients)
-    return (
-      <div className="container page-space empty-state">
-        <h1>
-          {translate("Zakazivanje nije dostupno.", "Booking unavailable.")}
-        </h1>
-        <Link className="button button-primary" href="/psychotherapy">
-          {translate("Pronađi stručnjaka", "Find a professional")}
-        </Link>
-      </div>
-    );
-  const services = therapist.services.filter(
-    (candidateService) => candidateService.active,
-  );
-  const service = services.find(
-    (candidateService) => candidateService.id === serviceId,
-  );
-  /** Pamti uslugu, uklanja raniji izbor vremena i pronalazi prvi dan sa slobodnim terminom. */
-  function chooseService(id: string) {
-    setServiceId(id);
-    setSelectedStart(null);
+  const therapist = therapists.find((therapist) => therapist.id === id);
+  const services =
+    therapist?.services.filter((service) => service.active) || [];
+  const service = services.find((service) => service.id === serviceId);
+  /** Bira prvi budući početak iz radnog vremena; stvarnu zauzetost zatim učitava API. */
+  function handleChooseService(serviceId: string) {
+    setServiceId(serviceId);
+    setWaitlistStart(null);
+    setStart(null);
     setError("");
-    const selectedService = services.find((service) => service.id === id);
-    if (!selectedService || !therapist || !state) {
-      return;
-    }
-    for (let i = 0; i <= 90; i++) {
-      const date = addDays(dateKey(), i);
+    const selectedService = services.find(
+      (service) => service.id === serviceId,
+    );
+    if (!therapist || !selectedService) return;
+    for (let day = 0; day <= 90; day++) {
+      const candidate = addDays(dateKey(), day);
       if (
-        availableStarts(
-          therapist,
-          date,
-          selectedService.duration,
-          state.bookings,
-        ).length
+        availableStarts(therapist, candidate, selectedService.duration, [])
+          .length
       ) {
-        setSelectedDate(date);
+        setDate(candidate);
         break;
       }
     }
   }
-  /** Pamti datum i briše vrijeme jer prethodno vrijeme pripada drugom danu. */
-  function chooseDate(date: string) {
-    setSelectedDate(date);
-    setSelectedStart(null);
+  /** Promjena dana poništava prethodni izbor vremena. */
+  function handleChooseDate(date: string) {
+    setDate(date);
+    setWaitlistStart(null);
+    setStart(null);
     setError("");
   }
-
-  /** Pamti izabrani početak seanse i uklanja prethodnu poruku greške. */
-  function chooseStart(start: number) {
-    setSelectedStart(start);
-    setError("");
-  }
-
-  /** Čita formular, poziva request iz demo omotača i prikazuje uspjeh ili grešku. */
-  function handleSubmitRequest(event: FormEvent<HTMLFormElement>) {
+  /** Šalje kontakt i izbor; ime, email, cijenu i trajanje server uzima iz provjerenih podataka. */
+  async function handleSubmitRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!service || selectedStart === null) {
-      return;
-    }
-    setError("");
+    if (inProgress.current || !service || start === null) return;
+    const form = new FormData(event.currentTarget);
+    inProgress.current = true;
     setSubmitting(true);
-    const data = new FormData(event.currentTarget);
+    setError("");
     try {
-      const booking = request(id, {
+      const response = await requestBookingApi("bookings", {
+        therapistId: id,
         serviceId: service.id,
-        date: selectedDate,
-        start: selectedStart,
-        clientName: String(data.get("name")),
-        clientEmail: String(data.get("email")),
-        clientPhone: String(data.get("phone")),
+        duration: String(service.duration),
+        date,
+        start: String(start),
+        phone: String(form.get("phone") || ""),
       });
-      setSuccess(booking);
-    } catch (error) {
-      setError(errorText(error, translate));
+      if (!response.booking) throw new Error("Nedostaje rezervacija.");
+      setSuccess(response.booking);
+    } catch (failure) {
+      setError(authErrorMessage(failure));
+      setStart(null);
+      void refresh();
     } finally {
+      inProgress.current = false;
       setSubmitting(false);
     }
   }
-
+  if (directoryError) return <DirectoryError />;
+  if (loading || authLoading) return <Loading />;
+  if (!therapist || !therapist.acceptingClients)
+    return (
+      <div className="container page-space">
+        <h1>
+          {translate("Zakazivanje nije dostupno.", "Booking unavailable.")}
+        </h1>
+      </div>
+    );
   if (success)
     return (
       <div className="container page-space">
         <div className="success-card">
-          <div className="success-icon">
-            <Check size={30} />
-          </div>
-          <span className="eyebrow">
-            {translate("PRVI KORAK JE NAPRAVLJEN", "YOUR FIRST STEP IS TAKEN")}
-          </span>
           <h1>{translate("Zahtjev je poslat.", "Request submitted.")}</h1>
           <p>
             {translate(
-              "Termin je zauzet i čeka odgovor terapeuta.",
-              "Your time is held and awaits your therapist’s response.",
+              "Termin je zauzet za druge klijente i čeka odgovor terapeuta.",
+              "The time is held for you and awaits the therapist’s response.",
             )}
           </p>
           <div className="success-details">
             <strong>{therapist.name}</strong>
-            <span>
-              {locale === "mne" ? success.serviceName : success.serviceNameEn}
-            </span>
-            <span className="capitalize">
-              {formatDate(success.date, locale, true)}
-            </span>
+            <span>{success.date}</span>
             <strong>
               {timeLabel(success.start)}–{timeLabel(success.end)}
             </strong>
-            <span>
-              <Price value={success.price} />
-            </span>
+            <Price value={success.price} />
           </div>
-          <p className="demo-explanation">
-            {translate(
-              "Demo: zahtjev je sačuvan samo u ovom browseru. Email nije poslat. Odgovor možete isprobati u pregledu za terapeuta.",
-              "Demo: your request is saved only in this browser. No email was sent. Try responding in the therapist dashboard.",
-            )}
-          </p>
-          <Link href="/dashboard" className="button button-primary">
+          <Link href="/account#my-bookings" className="button button-primary">
             {translate("Pogledaj moje zahtjeve", "View my requests")}
-            <ArrowRight size={17} />
-          </Link>
-          <Link href={`/therapist/${id}`} className="text-link">
-            {translate("Nazad na profil", "Back to profile")}
           </Link>
         </div>
       </div>
     );
   return (
     <div className="container page-space">
-      <Link href={`/therapist/${id}`} className="back-link">
-        <ArrowLeft size={16} />
+      <Link className="back-link" href={`/therapist/${id}`}>
         {translate("Nazad na profil", "Back to profile")}
       </Link>
       <div className="booking-layout">
         <div className="booking-main">
-          <div className="page-intro">
-            <span className="eyebrow">
-              {translate("VAŠ SLJEDEĆI KORAK", "YOUR NEXT STEP")}
-            </span>
-            <h1>
-              {translate(
-                "Vrijeme za vaš razgovor.",
-                "Time for your conversation.",
-              )}
-            </h1>
-            <p>
-              {translate(
-                "Izaberite uslugu i termin. Terapeut će potvrditi zahtjev ili predložiti drugo vrijeme.",
-                "Choose a service and time. Your therapist will confirm or propose another time.",
-              )}
-            </p>
-          </div>
-          <div className="booking-steps">
-            <span className="active">
-              <i>1</i>
-              {translate("Usluga", "Service")}
-            </span>
-            <div />
-            <span className={service ? "active" : ""}>
-              <i>2</i>
-              {translate("Termin", "Time")}
-            </span>
-            <div />
-            <span className={selectedStart !== null ? "active" : ""}>
-              <i>3</i>
-              {translate("Vaši podaci", "Your details")}
-            </span>
-          </div>
+          <h1>
+            {translate(
+              "Vrijeme za vaš razgovor.",
+              "Time for your conversation.",
+            )}
+          </h1>
+          <p>
+            {translate(
+              "Izaberite vrstu seanse, datum i slobodno vrijeme. Trajanje određuje terapeut.",
+              "Choose a session type, date and available time. The therapist sets the duration.",
+            )}
+          </p>
           <section className="booking-section">
-            <div className="numbered-heading">
-              <span>01</span>
-              <h2>{translate("Izaberite uslugu", "Choose a service")}</h2>
-            </div>
+            <h2>{translate("Vrsta seanse", "Session type")}</h2>
             <div className="service-options">
-              {services.map((candidateService) => (
+              {services.map((service) => (
                 <button
-                  key={candidateService.id}
-                  onClick={() => chooseService(candidateService.id)}
-                  className={`service-option ${serviceId === candidateService.id ? "selected" : ""}`}
-                  aria-pressed={serviceId === candidateService.id}
+                  type="button"
+                  key={service.id}
+                  className={`service-option ${serviceId === service.id ? "selected" : ""}`}
+                  onClick={() => handleChooseService(service.id)}
+                  aria-pressed={serviceId === service.id}
                 >
                   <span className="radio-mark">
-                    {serviceId === candidateService.id && <Check size={12} />}
+                    {serviceId === service.id ? "✓" : ""}
                   </span>
                   <div>
                     <strong>
-                      {locale === "mne"
-                        ? candidateService.name
-                        : candidateService.nameEn}
+                      {service.name} · {service.duration} min
                     </strong>
-                    <span>
-                      <Clock3 size={13} />
-                      {candidateService.duration} min ·{" "}
-                      {translate("Uživo", "In person")}
-                    </span>
+                    <span>{translate("Uživo", "In person")}</span>
                   </div>
                   <strong>
-                    <Price value={candidateService.price} />
+                    <Price value={service.price} />
                   </strong>
                 </button>
               ))}
             </div>
-            {!services.length && (
-              <p className="muted">
-                {translate(
-                  "Terapeut još nije dodao usluge.",
-                  "This therapist has not added any services yet.",
-                )}
-              </p>
-            )}
           </section>
           {service && (
-            <section className="booking-section">
-              <div className="numbered-heading">
-                <span>02</span>
-                <h2>
-                  {translate(
-                    "Izaberite datum i vrijeme",
-                    "Choose a date and time",
-                  )}
-                </h2>
-              </div>
-              <CalendarPicker
-                key={service.id}
-                therapist={therapist}
-                duration={service.duration}
-                selectedDate={selectedDate}
-                onDate={chooseDate}
-                selectedStart={selectedStart}
-                onStart={chooseStart}
-              />
-            </section>
+            <ServerCalendar
+              therapistId={id}
+              duration={service.duration}
+              date={date}
+              onDate={handleChooseDate}
+              start={start}
+              onStart={setStart}
+              onUnavailable={handleUnavailable}
+              onWaitlistStart={
+                user?.role === "CLIENT" ? setWaitlistStart : undefined
+              }
+            />
           )}
-          {service && selectedStart !== null && (
-            <section className="booking-section contact-section">
-              <div className="numbered-heading">
-                <span>03</span>
+          {service && user?.role === "CLIENT" && (
+            <WaitlistForm
+              key={`${service.id}:${date}:${waitlistStart}`}
+              therapistId={id}
+              serviceId={service.id}
+              duration={service.duration}
+              price={service.price}
+              date={date}
+              selectedStart={waitlistStart}
+            />
+          )}
+          {!user ? (
+            <p>
+              <Link href="/login" className="button button-primary">
+                {translate("Prijavite se za zakazivanje", "Sign in to book")}
+              </Link>
+            </p>
+          ) : user.role !== "CLIENT" ? (
+            <p>
+              {translate(
+                "Termine zakazuju nalozi pacijenata.",
+                "Patient accounts can book sessions.",
+              )}
+            </p>
+          ) : (
+            start !== null && (
+              <section className="booking-section contact-section">
                 <h2>{translate("Podaci za kontakt", "Contact details")}</h2>
-              </div>
-              <div className="info-note">
-                <Info size={17} />
-                <span>
-                  {translate(
-                    "Terapeut vidi vaše ime i prezime, email i broj telefona. Detalje susreta dogovarate direktno, mimo platforme.",
-                    "Your therapist sees your full name, email and phone number. Arrange session details directly, outside the platform.",
-                  )}
-                </span>
-              </div>
-              <form onSubmit={handleSubmitRequest}>
-                <label className="field">
-                  <span>{translate("Ime i prezime", "Full name")}</span>
-                  <input
-                    name="name"
-                    required
-                    maxLength={120}
-                    autoComplete="name"
-                    defaultValue="Demo klijent"
-                  />
-                </label>
-                <div className="form-row">
+                <form onSubmit={handleSubmitRequest}>
+                  <label className="field">
+                    <span>{translate("Ime i prezime", "Full name")}</span>
+                    <input
+                      value={`${user.firstName} ${user.lastName}`}
+                      readOnly
+                    />
+                  </label>
                   <label className="field">
                     <span>Email</span>
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      autoComplete="email"
-                      defaultValue="klijent@example.test"
-                    />
+                    <input value={user.email} readOnly />
                   </label>
                   <label className="field">
                     <span>{translate("Broj telefona", "Phone number")}</span>
@@ -315,97 +250,58 @@ export function BookingFlow({ id }: { id: string }) {
                       name="phone"
                       type="tel"
                       required
+                      maxLength={30}
                       autoComplete="tel"
-                      defaultValue="+382 67 000 000"
+                      defaultValue={user.phone || ""}
                     />
                   </label>
-                </div>
-                <label className="checkbox-label">
-                  <input type="checkbox" required />
-                  <span>
-                    {translate(
-                      "Razumijem da zahtjev čeka potvrdu i da su kontakt podaci vidljivi terapeutu.",
-                      "I understand this request awaits confirmation and my contact details are visible to the therapist.",
-                    )}
-                  </span>
-                </label>
-                {error && (
-                  <p className="form-error" role="alert">
-                    {error}
-                  </p>
-                )}
-                <div className="submit-row">
-                  <span>
-                    <ShieldCheck size={14} />
-                    {translate(
-                      "Koristite probne podatke u demo verziji.",
-                      "Use sample details in this demo.",
-                    )}
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={submitting}
+                  <label className="checkbox-label">
+                    <input type="checkbox" required />
+                    <span>
+                      {translate(
+                        "Razumijem da zahtjev čeka potvrdu i da terapeut vidi moje kontakt podatke.",
+                        "I understand the request awaits confirmation and the therapist sees my contact details.",
+                      )}
+                    </span>
+                  </label>
+                  <ActionButton
+                    pending={submitting}
                     className="button button-primary"
+                    disabled={submitting}
                   >
-                    {translate("Pošalji zahtjev", "Send request")}
-                    <ArrowRight size={17} />
-                  </button>
-                </div>
-              </form>
-            </section>
+                    {submitting
+                      ? translate("Slanje…", "Sending…")
+                      : translate("Pošalji zahtjev", "Send request")}
+                  </ActionButton>
+                  {submitting && (
+                    <PendingStatus>
+                      {translate(
+                        "Slanje zahtjeva za termin…",
+                        "Sending your booking request…",
+                      )}
+                    </PendingStatus>
+                  )}
+                </form>
+              </section>
+            )
+          )}
+          {error && (
+            <p role="alert" className="form-error">
+              {error}
+            </p>
           )}
         </div>
         <aside className="booking-sidebar">
           <div className="booking-summary">
             <Avatar therapist={therapist} />
             <h2>{therapist.name}</h2>
-            <p>{locale === "mne" ? therapist.title : therapist.titleEn}</p>
-            <Verified therapist={therapist} />
-            <div className="summary-address">
-              <MapPin size={16} />
-              <div>
-                <strong>{therapist.city}</strong>
-                <p>{therapist.address}</p>
-              </div>
-            </div>
-            {service && (
-              <div className="selected-summary">
-                <span className="tiny-label">
-                  {translate("VAŠ IZBOR", "YOUR SELECTION")}
-                </span>
-                <strong>
-                  {locale === "mne" ? service.name : service.nameEn}
-                </strong>
-                <span>
-                  <Clock3 size={14} />
-                  {service.duration} min
-                </span>
-                {selectedStart !== null && (
-                  <>
-                    <span className="capitalize">
-                      <CalendarDays size={14} />
-                      {formatDate(selectedDate, locale)}
-                    </span>
-                    <strong>
-                      {timeLabel(selectedStart)}–
-                      {timeLabel(selectedStart + service.duration)}
-                    </strong>
-                  </>
-                )}
-                <strong>
-                  <Price value={service.price} />
-                </strong>
-              </div>
-            )}
-            <div className="summary-note">
-              <Info size={16} />
-              <span>
-                {translate(
-                  "Nema online plaćanja. Cijenu i način plaćanja dogovarate sa terapeutom.",
-                  "No online payments. Discuss price and payment directly with your therapist.",
-                )}
-              </span>
-            </div>
+            <p>{therapist.city}</p>
+            <p>
+              {translate(
+                "Nema online plaćanja. Zahtjev odmah zauzima termin.",
+                "No online payment. A request holds the time immediately.",
+              )}
+            </p>
           </div>
         </aside>
       </div>

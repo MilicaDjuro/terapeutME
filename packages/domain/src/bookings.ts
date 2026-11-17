@@ -183,7 +183,10 @@ export function proposeAlternative(
   now = new Date(),
 ): Booking {
   if (
-    !["REQUESTED", "ALTERNATIVE_PROPOSED"].includes(booking.status) ||
+    !(
+      ["REQUESTED", "ALTERNATIVE_PROPOSED"].includes(booking.status) ||
+      (booking.status === "CONFIRMED" && booking.series)
+    ) ||
     booking.therapistId !== therapist.id ||
     hasStarted(booking, now)
   )

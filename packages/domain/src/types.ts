@@ -44,6 +44,14 @@ export interface AvailabilityWindow {
   start: number;
   end: number;
 }
+// Jedan konkretan datum ima prednost nad sedmicnim rasporedom; working=false znaci neradni dan.
+export interface DateAvailability {
+  id: string;
+  date: string;
+  working: boolean;
+  start: number;
+  end: number;
+}
 // Blokada na određenom datumu, npr. pauza. Trenutno nema poseban editor.
 export interface BlockedInterval {
   id: string;
@@ -74,7 +82,9 @@ export interface Therapist {
   initials: string;
   services: Service[];
   availability: AvailabilityWindow[];
+  dateAvailability?: DateAvailability[];
   blocked: BlockedInterval[];
+  photos?: { id: string; url: string; primary: boolean }[];
 }
 // Jedan zapis istorije, uključujući prethodni termin kod promjene A → B.
 export interface BookingEvent {
@@ -105,6 +115,14 @@ export interface Booking {
   status: BookingStatus;
   createdAt: string;
   events: BookingEvent[];
+  // Pravilo serije se ne pomjera kada se promijeni samo jedna seansa.
+  series?: {
+    id: string;
+    intervalDays: number;
+    originalDate: string;
+    originalStart: number;
+    active: boolean;
+  } | null;
 }
 // Svi demo podaci iz browsera. Verzija omogućava kasniju promjenu formata.
 export interface DemoState {
@@ -120,3 +138,65 @@ export class DomainError extends Error {
     this.name = "DomainError";
   }
 }
+
+// Zajednički oblik zbirne analitike: API i prikaz koriste ista imena i brojeve.
+export interface ProfileAnalyticsCounts {
+  views: number;
+  requests: number;
+  confirmed: number;
+  cancelled: number;
+  proposals: number;
+  rescheduled: number;
+  declined: number;
+}
+export interface ProfileAnalytics {
+  currentBookings: {
+    total: number;
+    waiting: number;
+    awaitingTherapist: number;
+    awaitingClient: number;
+    confirmed: number;
+    history: number;
+  };
+  from: string;
+  to: string;
+  trackingStartedAt: string;
+  totals: ProfileAnalyticsCounts;
+  daily: (ProfileAnalyticsCounts & {
+    date: string;
+    uniqueVisitors: number;
+    repeatViews: number;
+    clientViews: number;
+    anonymousViews: number;
+  })[];
+  uniqueVisitors: number;
+  convertedVisitors: number;
+  conversion: number | null;
+  detailedTrackingStartedAt: string;
+  clientVisitors: number;
+  visitorSummary: {
+    repeatViews: number;
+    returningVisitors: number;
+    oneTimeVisitors: number;
+    newVisitors: number;
+    averageViews: number;
+    mostViews: number;
+  };
+  audiences: {
+    kind: ProfileViewerKind;
+    views: number;
+    visitors: number;
+    repeatViews: number;
+  }[];
+  visitors: {
+    number: number;
+    kind: ProfileViewerKind;
+    views: number;
+    activeDays: number;
+    firstViewedAt: string;
+    lastViewedAt: string;
+  }[];
+  visitorPage: number;
+  visitorPages: number;
+}
+export type ProfileViewerKind = "CLIENT" | "ANONYMOUS" | "OTHER" | "SELF";

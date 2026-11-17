@@ -1,16 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "./brand-fonts.css";
 
 /* 01. Boje i osnovne vrijednosti. Promjena ovdje utiče na cijeli sajt. */
 :root {
-  --bg: #fafbf8;
+  --bg: #edf3f0;
   --surface: #fff;
-  --ink: #233d35;
-  --muted: #6c7973;
-  --primary: #356452;
-  --primary-dark: #244a3c;
-  --sage: #eaf0e6;
-  --border: #e2e8df;
-  --soft: #f2f5ed;
+  --ink: #172b3a;
+  --muted: #647682;
+  --primary: #176e72;
+  --primary-dark: #12585b;
+  --sage: #e5f1f2;
+  --border: #d5dddc;
+  --soft: #f3f7f6;
   --danger: #9a4341;
   --radius: 18px;
 }
@@ -26,7 +26,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: "DM Sans", "Segoe UI", sans-serif;
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 15px;
   line-height: 1.6;
 }
@@ -79,7 +79,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
   line-height: 1.2;
   letter-spacing: -0.035em;
   font-weight: 600;
@@ -108,7 +108,7 @@ svg {
   flex-shrink: 0;
 }
 ::selection {
-  background: #cfe1cd;
+  background: #c8e6e7;
 }
 .container {
   width: min(1200px, calc(100% - 64px));
@@ -146,7 +146,7 @@ svg {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #608565;
+  background: #2291a0;
   flex-shrink: 0;
 }
 .tiny-label {
@@ -173,7 +173,7 @@ svg {
 .dot {
   height: 3px;
   width: 3px;
-  background: #8a9990;
+  background: #879b9f;
   border-radius: 50%;
   display: inline-block;
 }
@@ -216,25 +216,25 @@ svg {
 }
 .button-outline {
   background: transparent;
-  border-color: #c9d5c7;
+  border-color: #b8ced0;
   color: var(--primary);
 }
 .button-outline:hover {
   background: var(--sage);
 }
 .button-soft {
-  background: #edf3e9;
+  background: #e5f1f2;
   color: var(--primary);
 }
 .button-soft:hover {
-  background: #e0eadb;
+  background: #d6e9eb;
 }
 .button-quiet {
   background: transparent;
   color: var(--muted);
 }
 .button-quiet:hover {
-  background: #f0f2ed;
+  background: #edf1f1;
 }
 .button-danger {
   background: var(--danger);
@@ -301,8 +301,8 @@ svg {
 /* 04. Demo obavještenje i zaglavlje. Mobilni meni prikazuje components/shell.tsx. */
 .demo-strip {
   min-height: 28px;
-  background: #e7eddf;
-  color: #50624e;
+  background: #e4eeed;
+  color: #526e76;
   font-size: 10px;
   text-align: center;
   display: flex;
@@ -335,25 +335,11 @@ svg {
 .brand {
   display: flex;
   align-items: center;
-  font-family: "Manrope", "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -1.2px;
   white-space: nowrap;
-}
-.brand-symbol {
-  display: inline-flex;
-  width: 35px;
-  height: 35px;
-  margin-right: 7px;
-  color: var(--primary);
-}
-.brand-symbol svg {
-  width: 100%;
-}
-.brand-me {
-  color: #6e8973;
-  font-weight: 500;
 }
 .desktop-nav {
   display: flex;
@@ -362,7 +348,7 @@ svg {
 }
 .desktop-nav a {
   font-size: 12px;
-  color: #67716a;
+  color: #647682;
   font-weight: 500;
   padding-block: 10px;
 }
@@ -404,11 +390,11 @@ svg {
   font-size: 12px;
   text-align: center;
 }
-/* 05. Početna: uvodni tekst i dekorativna biljka. Dekoracija ne obrađuje podatke. */
+/* 05. Osnova početne stranice. Vizuelne dopune i fotografija su u brand.css. */
 .home-hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(110deg, #fafbf8 30%, #f1f4e9 100%);
+  background: linear-gradient(110deg, #edf3f0 30%, #e7f1f1 100%);
 }
 .hero-grid {
   display: grid;
@@ -454,107 +440,6 @@ svg {
 .hero-reassurance svg {
   color: #648563;
 }
-.hero-art {
-  position: relative;
-  min-height: 420px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.art-arch {
-  height: 365px;
-  width: 300px;
-  background: #e5ebd9;
-  border-radius: 160px 160px 17px 17px;
-  position: relative;
-  overflow: hidden;
-  transform: rotate(-3deg);
-}
-.plant-art {
-  position: absolute;
-  width: 290px;
-  bottom: 20px;
-  left: 10px;
-}
-.art-caption {
-  position: absolute;
-  bottom: 13px;
-  right: 25px;
-  color: #6b795e;
-  letter-spacing: 0.08em;
-  font-size: 10px;
-}
-.floating-profile {
-  position: absolute;
-  left: -17px;
-  top: 55px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 17px 22px 17px 17px;
-  background: #fff;
-  border: 1px solid #e4e9df;
-  border-radius: 14px;
-  box-shadow: 0 14px 40px #3240290c;
-  transform: rotate(-4deg);
-}
-.floating-profile .avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-}
-.floating-profile strong {
-  display: block;
-  font-size: 13px;
-}
-.floating-profile span {
-  font-size: 10px;
-  color: var(--muted);
-  display: block;
-}
-.floating-profile small {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 9px;
-  color: var(--primary);
-  margin-top: 5px;
-}
-.floating-note {
-  position: absolute;
-  right: -4px;
-  bottom: 37px;
-  display: flex;
-  gap: 13px;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #e4e9df;
-  border-radius: 13px;
-  padding: 18px 24px;
-  box-shadow: 0 10px 30px #32402909;
-  transform: rotate(3deg);
-}
-.note-icon {
-  background: #f1f3e8;
-  color: var(--primary);
-  display: flex;
-  border-radius: 50%;
-  padding: 13px;
-}
-.floating-note strong {
-  display: block;
-  font-size: 12px;
-}
-.floating-note span:not(.note-icon) {
-  font-size: 10px;
-  color: var(--muted);
-}
-.art-spark {
-  position: absolute;
-  top: 20px;
-  right: 25px;
-  color: #acb88c;
-}
 /* 06. Početna: pretraga, koraci, kartice stručnjaka i poziv na podršku. */
 .quick-search {
   position: relative;
@@ -578,7 +463,7 @@ svg {
   height: 44px;
 }
 .search-intro svg {
-  color: #789375;
+  color: #2291a0;
 }
 .search-intro strong {
   font-size: 13px;
@@ -652,10 +537,10 @@ svg {
   justify-content: center;
 }
 .step-number {
-  font-family: "Manrope", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 28px;
   font-weight: 500;
-  color: #dce3d4;
+  color: #c9dfe2;
 }
 .step-card h3 {
   font-size: 16px;
@@ -666,7 +551,7 @@ svg {
   margin-bottom: 0;
 }
 .featured-section {
-  background: #f0f4eb;
+  background: #e8f0ee;
 }
 .therapist-grid {
   display: grid;
@@ -712,7 +597,7 @@ svg {
   color: #436849;
 }
 .avatar span {
-  font-family: "Manrope", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 22px;
   position: relative;
   z-index: 1;
@@ -754,9 +639,9 @@ svg {
   gap: 4px;
   font-size: 9px;
   white-space: nowrap;
-  color: #56714e;
+  color: #176e72;
   font-weight: 500;
-  background: #f1f5ec;
+  background: #e9f3f3;
   border-radius: 5px;
   padding: 5px 7px;
 }
@@ -769,7 +654,7 @@ svg {
   border-radius: 5px;
 }
 .card-name {
-  font-family: "Manrope", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 19px;
   font-weight: 650;
   letter-spacing: -0.03em;
@@ -778,7 +663,7 @@ svg {
   justify-content: space-between;
 }
 .card-name svg {
-  color: #849581;
+  color: #7f949c;
 }
 .card-title {
   font-size: 11px;
@@ -801,9 +686,9 @@ svg {
 }
 .tags span {
   font-size: 9px;
-  background: #f3f5ee;
-  color: #66725f;
-  border: 1px solid #e7ecdf;
+  background: #f0f5f4;
+  color: #526e76;
+  border: 1px solid #dce6e5;
   padding: 4px 8px;
   border-radius: 5px;
   line-height: 1.45;
@@ -851,8 +736,8 @@ svg {
   margin-bottom: 0;
 }
 .care-banner {
-  background: #edf2e7;
-  border: 1px solid #e0e8d8;
+  background: #e5f1f2;
+  border: 1px solid #c9dfe2;
   border-radius: 20px;
   padding: 43px 45px;
   display: flex;
@@ -860,13 +745,13 @@ svg {
   gap: 30px;
 }
 .care-icon {
-  color: #7c946d;
+  color: #2291a0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 80px;
   height: 80px;
-  border: 1px solid #d7e1cc;
+  border: 1px solid #c2d7d8;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -887,7 +772,7 @@ svg {
 /* 07. Podnožje svih stranica. */
 .site-footer {
   border-top: 1px solid var(--border);
-  background: #f8faf5;
+  background: #e8efed;
 }
 .footer-top {
   padding-block: 42px;
@@ -909,7 +794,7 @@ svg {
   flex-wrap: wrap;
   gap: 25px;
   font-size: 10px;
-  color: #65725f;
+  color: #526e76;
 }
 .footer-links a {
   display: flex;
@@ -974,7 +859,7 @@ svg {
   min-width: 0;
   width: 100%;
   min-height: 42px;
-  border: 1px solid #dce3d6;
+  border: 1px solid #d5dddc;
   border-radius: 7px;
   background: #fff;
   padding: 10px 12px;
@@ -994,7 +879,7 @@ svg {
   position: absolute;
   top: 14px;
   left: 12px;
-  color: #8b9780;
+  color: #647682;
 }
 .input-icon input {
   padding-left: 36px;
@@ -1013,7 +898,7 @@ svg {
   margin-top: 24px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
-  color: #85907c;
+  color: #647682;
   font-size: 10px;
   line-height: 1.8;
 }
@@ -1066,7 +951,7 @@ svg {
   max-width: 460px;
 }
 .empty-state > svg {
-  color: #90a27e;
+  color: #7b969e;
   margin-bottom: 8px;
 }
 .loading {
@@ -1079,12 +964,33 @@ svg {
   font-size: 13px;
 }
 .spinner {
+  display: inline-block;
+  flex-shrink: 0;
   width: 20px;
   height: 20px;
   border: 2px solid var(--border);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+/* Indikator prati boju dugmeta i ne mijenja njegovu visinu dok čekamo API. */
+button .spinner {
+  width: 16px;
+  height: 16px;
+  border-color: currentColor;
+  border-right-color: transparent;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.pending-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+button[aria-busy="true"] {
+  cursor: progress;
 }
 @keyframes spin {
   to {
@@ -1144,7 +1050,7 @@ svg {
   justify-content: center;
   padding: 12px;
   border-radius: 9px;
-  background: #f1f4e9;
+  background: #e7f1f1;
   color: var(--primary);
 }
 .profile-services strong {
@@ -1170,7 +1076,7 @@ svg {
 }
 .icon-line svg {
   margin-top: 4px;
-  color: #7b9270;
+  color: #2291a0;
 }
 .booking-summary {
   padding: 27px;
@@ -1202,7 +1108,7 @@ svg {
   display: flex;
   align-items: start;
   gap: 9px;
-  color: #839076;
+  color: #647682;
   font-size: 10px;
   margin-top: 18px;
   line-height: 1.8;
@@ -1219,7 +1125,7 @@ svg {
   font-size: 12px;
 }
 .summary-address svg {
-  color: #77946e;
+  color: #176e72;
   margin-top: 3px;
 }
 .summary-address p {
@@ -1317,7 +1223,7 @@ svg {
 .numbered-heading > span {
   font-size: 10px;
   letter-spacing: 0.08em;
-  color: #899b7a;
+  color: #647682;
 }
 .numbered-heading h2 {
   font-size: 18px;
@@ -1341,11 +1247,11 @@ svg {
   color: var(--ink);
 }
 .service-option:hover {
-  border-color: #9db293;
+  border-color: #8bb7bc;
 }
 .service-option.selected {
   border-color: var(--primary);
-  background: #f0f5ea;
+  background: #e8f3f3;
 }
 .radio-mark {
   width: 17px;
@@ -1353,7 +1259,7 @@ svg {
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #cbd6c1;
+  border: 1px solid #b8ced0;
   border-radius: 50%;
   color: white;
   flex-shrink: 0;
@@ -1410,7 +1316,7 @@ svg {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  color: #939e88;
+  color: #647682;
   font-size: 9px;
   margin-bottom: 7px;
 }
@@ -1427,14 +1333,14 @@ svg {
   align-items: center;
   min-width: 0;
   aspect-ratio: 1;
-  background: #f6f8f1;
+  background: #f3f7f6;
   border: 1px solid transparent;
   border-radius: 7px;
   font-size: 12px;
   color: var(--ink);
 }
 .calendar-days button:hover:not(:disabled) {
-  border-color: #8da780;
+  border-color: #7aafb5;
 }
 .calendar-days button:disabled {
   color: #c0c6b6;
@@ -1445,14 +1351,14 @@ svg {
   color: white;
 }
 .calendar-days button.today:not(.selected) {
-  border-color: #a6b99b;
+  border-color: #8bb7bc;
 }
 .calendar-days i {
   position: absolute;
   bottom: 4px;
   width: 3px;
   height: 3px;
-  background: #90a97e;
+  background: #2291a0;
   border-radius: 50%;
 }
 .calendar-days button.selected i {
@@ -1463,14 +1369,14 @@ svg {
   gap: 5px;
   align-items: center;
   font-size: 9px;
-  color: #7e8c72;
+  color: #647682;
   margin-top: 19px;
 }
 .legend-dot {
   width: 5px;
   height: 5px;
   display: inline-block;
-  background: #89a772;
+  background: #2291a0;
   border-radius: 50%;
 }
 .calendar-zone {
@@ -1482,7 +1388,7 @@ svg {
 .times-panel {
   border-left: 1px solid var(--border);
   padding: 23px;
-  background: #fdfefb;
+  background: #fcfefe;
 }
 .times-heading h3 {
   font-size: 15px;
@@ -1512,7 +1418,7 @@ svg {
   justify-content: center;
   gap: 1px;
   min-height: 47px;
-  border: 1px solid #dce6d4;
+  border: 1px solid #c9dfe2;
   border-radius: 7px;
   background: white;
   color: var(--primary);
@@ -1523,10 +1429,10 @@ svg {
 .time-options button span {
   font-size: 9px;
   font-weight: 400;
-  color: #8b9780;
+  color: #647682;
 }
 .time-options button:hover {
-  background: #f0f5e9;
+  background: #e8f3f3;
   border-color: var(--primary);
 }
 .time-options button.selected {
@@ -1535,7 +1441,7 @@ svg {
   border-color: var(--primary);
 }
 .time-options button.selected span {
-  color: #d5e3ce;
+  color: #c9dfe2;
 }
 .no-times {
   display: flex;
@@ -1545,7 +1451,7 @@ svg {
   justify-content: center;
   gap: 13px;
   min-height: 200px;
-  color: #93a47f;
+  color: #7b969e;
 }
 .no-times p {
   font-size: 12px;
@@ -1560,10 +1466,10 @@ svg {
   align-items: start;
   gap: 10px;
   font-size: 11px;
-  background: #eff3e9;
+  background: #edf5f4;
   border-radius: 8px;
   padding: 15px 17px;
-  color: #66795b;
+  color: #526e76;
   line-height: 1.8;
   margin-bottom: 22px;
 }
@@ -1580,7 +1486,7 @@ svg {
   align-items: start;
   gap: 9px;
   font-size: 11px;
-  color: #6f7e65;
+  color: #526e76;
   margin-bottom: 21px;
 }
 .checkbox-label input {
@@ -1600,7 +1506,7 @@ svg {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #8b987d;
+  color: #647682;
 }
 .form-error {
   background: #f9ebea;
@@ -1616,6 +1522,89 @@ svg {
   padding: 12px 16px;
   border-radius: 7px;
   font-size: 12px;
+}
+/* Potvrdu uz formular komponenta sakriva poslije četiri sekunde; greška ostaje vidljiva. */
+.save-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin-block: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  width: 100%;
+  box-sizing: border-box;
+}
+.save-feedback > svg,
+.save-feedback > .spinner {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.save-feedback strong {
+  display: block;
+  font-size: 14px;
+}
+.save-feedback p {
+  margin: 4px 0 0;
+  color: inherit;
+}
+.save-feedback-success {
+  background: #edf5e5;
+  border-color: #b7cfa4;
+  color: #294c35;
+}
+.save-feedback-error {
+  background: #f9ebea;
+  border-color: #e4b3b0;
+  color: var(--danger);
+}
+.save-feedback-pending {
+  background: #f1f5f2;
+  color: var(--primary);
+}
+/* Potvrda ostaje vidljiva i kada terapeut uređuje formular pri dnu rasporeda. */
+.schedule-feedback {
+  position: sticky;
+  top: 99px;
+  z-index: 20;
+}
+.schedule-feedback .save-feedback {
+  box-shadow: 0 4px 16px #173d2520;
+}
+.profile-loading {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f3f7f6;
+  margin-block: 16px;
+}
+.profile-loading-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.profile-loading p {
+  color: var(--muted);
+  font-size: 13px;
+}
+.profile-loading-lines {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+.profile-loading-lines span {
+  height: 12px;
+  background: #dce7e7;
+  border-radius: 6px;
+}
+.profile-loading-lines span:nth-child(2) {
+  width: 75%;
+}
+.profile-loading-lines span:nth-child(3) {
+  width: 55%;
 }
 .success-card {
   max-width: 620px;
@@ -1633,7 +1622,7 @@ svg {
 .success-icon {
   width: 68px;
   height: 68px;
-  background: #e9f1e2;
+  background: #e5f1f2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1656,8 +1645,8 @@ svg {
   width: 100%;
   padding: 25px;
   margin-block: 8px;
-  background: #f4f7ef;
-  border: 1px solid #e6eddd;
+  background: #f3f7f6;
+  border: 1px solid #dce6e5;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -1697,8 +1686,8 @@ svg {
   justify-content: space-between;
   align-items: center;
   gap: 25px;
-  background: #eef2e8;
-  border: 1px solid #e1e8d8;
+  background: #edf5f4;
+  border: 1px solid #d5dddc;
   border-radius: 10px;
   padding: 16px 20px;
   margin-bottom: 28px;
@@ -1709,13 +1698,13 @@ svg {
   gap: 12px;
 }
 .demo-label {
-  background: #dce7cf;
+  background: #cce4e5;
   border-radius: 4px;
   padding: 4px 6px;
   font-size: 8px;
   letter-spacing: 0.08em;
   font-weight: 700;
-  color: #5c734d;
+  color: #176e72;
 }
 .demo-controls p {
   margin: 0;
@@ -1724,7 +1713,7 @@ svg {
 .role-switch {
   display: flex;
   gap: 3px;
-  background: #e1e7d8;
+  background: #d5dddc;
   padding: 4px;
   border-radius: 7px;
 }
@@ -1734,7 +1723,7 @@ svg {
   border-radius: 5px;
   padding: 7px 13px;
   font-size: 11px;
-  color: #728163;
+  color: #647682;
 }
 .role-switch button.active {
   background: white;
@@ -1760,7 +1749,7 @@ svg {
   position: absolute;
   right: 23px;
   top: 25px;
-  color: #9bab89;
+  color: #7b969e;
 }
 .stats-grid strong {
   font-size: 30px;
@@ -1798,7 +1787,7 @@ svg {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #edf1e5;
+  background: #edf5f4;
   min-width: 21px;
   height: 21px;
   padding: 2px;
@@ -1833,7 +1822,7 @@ svg {
   gap: 25px;
   flex-wrap: wrap;
   font-size: 11px;
-  color: #7e8b72;
+  color: #647682;
   margin-bottom: 19px;
 }
 .booking-meta span {
@@ -1887,7 +1876,7 @@ svg {
 .history-toggle {
   background: none;
   border: none;
-  color: #8a967e;
+  color: #647682;
   font-size: 10px;
   display: inline-flex;
   align-items: center;
@@ -1901,7 +1890,7 @@ svg {
 .alternative-note {
   font-size: 11px;
   padding: 12px 15px;
-  background: #f5f6ef;
+  background: #f3f7f6;
   border-radius: 7px;
   line-height: 1.8;
 }
@@ -1911,7 +1900,7 @@ svg {
   gap: 25px;
   margin-bottom: 19px;
   font-size: 11px;
-  color: #647e55;
+  color: #176e72;
 }
 .client-contact a {
   display: flex;
@@ -1958,7 +1947,7 @@ svg {
   gap: 12px;
   flex-wrap: wrap;
   font-size: 10px;
-  color: #89977b;
+  color: #647682;
   padding: 8px 0;
 }
 .event-history small {
@@ -2131,7 +2120,7 @@ svg {
   font-weight: 500;
   color: var(--muted);
   padding: 13px 15px;
-  background: #f6f8f1;
+  background: #f3f7f6;
 }
 .admin-table td {
   padding: 18px 15px;
@@ -2398,9 +2387,6 @@ svg {
   .hero-content h1 {
     font-size: 68px;
   }
-  .hero-art {
-    transform: scale(1.05);
-  }
 }
 /* 16. Manji desktop: uži raspored i sažetije kartice. */
 @media (max-width: 1100px) {
@@ -2419,14 +2405,6 @@ svg {
   }
   .hero-description {
     font-size: 14px;
-  }
-  .floating-profile {
-    left: -20px;
-    padding: 13px;
-  }
-  .floating-note {
-    right: -12px;
-    padding: 14px;
   }
   .quick-search {
     grid-template-columns: 160px 1fr 160px 110px;
@@ -2551,59 +2529,6 @@ svg {
   }
   .hero-description {
     font-size: 13px;
-  }
-  .hero-art {
-    min-height: 350px;
-  }
-  .art-arch {
-    width: 230px;
-    height: 310px;
-  }
-  .plant-art {
-    width: 245px;
-    left: -5px;
-    bottom: 14px;
-  }
-  .floating-profile {
-    top: 33px;
-    left: -10px;
-    gap: 8px;
-    padding: 11px;
-  }
-  .floating-profile .avatar {
-    width: 40px;
-    height: 40px;
-  }
-  .floating-profile .avatar span {
-    font-size: 15px;
-  }
-  .floating-profile strong {
-    font-size: 11px;
-  }
-  .floating-profile span {
-    font-size: 8px;
-  }
-  .floating-profile small {
-    font-size: 8px;
-  }
-  .floating-note {
-    right: -12px;
-    bottom: 25px;
-    padding: 12px;
-    gap: 8px;
-  }
-  .floating-note strong {
-    font-size: 10px;
-  }
-  .floating-note span:not(.note-icon) {
-    font-size: 8px;
-  }
-  .note-icon {
-    padding: 9px;
-  }
-  .art-spark {
-    right: 5px;
-    top: 0;
   }
   .hero-reassurance {
     gap: 12px;
@@ -2849,11 +2774,6 @@ svg {
   .brand {
     font-size: 21px;
   }
-  .brand-symbol {
-    width: 29px;
-    height: 29px;
-    margin-right: 5px;
-  }
   .header-actions {
     gap: 7px;
   }
@@ -2906,53 +2826,6 @@ svg {
   }
   .hero-reassurance span {
     font-size: 9px;
-  }
-  .hero-art {
-    min-height: 300px;
-    margin-top: 4px;
-    width: 100%;
-    max-width: 380px;
-    justify-self: center;
-  }
-  .art-arch {
-    height: 280px;
-    width: 230px;
-  }
-  .plant-art {
-    width: 235px;
-    left: 0;
-    bottom: 12px;
-  }
-  .floating-profile {
-    left: 0;
-    top: 25px;
-    padding: 13px;
-    gap: 10px;
-  }
-  .floating-profile .avatar {
-    width: 45px;
-    height: 45px;
-  }
-  .floating-profile strong {
-    font-size: 12px;
-  }
-  .floating-profile span {
-    font-size: 9px;
-  }
-  .floating-note {
-    right: 0;
-    bottom: 15px;
-    padding: 14px;
-  }
-  .floating-note strong {
-    font-size: 11px;
-  }
-  .floating-note span:not(.note-icon) {
-    font-size: 9px;
-  }
-  .art-spark {
-    right: 10px;
-    top: 5px;
   }
   .quick-search {
     grid-template-columns: 1fr 1fr;
@@ -3464,6 +3337,978 @@ svg {
   }
 }
 /* 19. Poštuje korisnikov izbor smanjenog kretanja; uklanja animacije i prelaze. */
+/* Registracija, prijava i pravi nalog dijele isti jednostavan okvir. */
+.auth-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  max-width: 1040px;
+  padding-block: 64px 80px;
+  align-items: start;
+}
+.auth-intro {
+  padding: 40px 16px 0 0;
+}
+.auth-intro h2 {
+  font-size: 42px;
+  max-width: 380px;
+}
+.auth-illustration {
+  width: 144px;
+  height: 144px;
+  display: grid;
+  place-items: center;
+  background: var(--sage);
+  color: var(--primary);
+  border-radius: 50%;
+  margin-block: 32px;
+}
+.auth-card {
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  min-width: 0;
+}
+.auth-card h1 {
+  font-size: 30px;
+}
+.auth-card .form-row > .field {
+  min-width: 0;
+}
+.auth-card .field input {
+  min-width: 0;
+  width: 100%;
+}
+.auth-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.auth-submit {
+  width: 100%;
+  margin-top: 12px;
+}
+.auth-switch {
+  margin: 24px 0 0;
+  font-size: 14px;
+}
+.auth-switch a {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 600;
+}
+.auth-steps {
+  display: flex;
+  gap: 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.auth-steps .current {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+.auth-steps .complete {
+  color: var(--primary);
+}
+.auth-code {
+  letter-spacing: 0.6em;
+  font-size: 24px;
+  text-align: center;
+}
+.account-page {
+  max-width: 760px;
+}
+/* Padajući nalog ostaje dostupan na svakoj stranici i na telefonu. */
+.account-menu {
+  position: relative;
+}
+.account-menu-trigger {
+  gap: 7px;
+  white-space: nowrap;
+}
+.account-menu-trigger[aria-expanded="true"] {
+  background: var(--sage);
+}
+.account-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px #233d3520;
+  z-index: 60;
+}
+.account-menu-identity {
+  padding: 10px 12px 14px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.account-menu-identity strong,
+.account-menu-identity span {
+  display: block;
+}
+.account-menu-identity span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.account-dropdown a,
+.account-menu-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+}
+.account-dropdown a:hover,
+.account-menu-logout:hover {
+  background: var(--soft);
+}
+.account-menu-logout {
+  color: var(--danger);
+}
+.account-dropdown .form-error {
+  padding: 0 12px;
+}
+/* Sažeci sekcija rade i tastaturom; zatvoreni formulari zadržavaju lokalni unos. */
+.schedule-section {
+  margin-block: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: white;
+}
+.schedule-section > summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  cursor: pointer;
+  list-style: none;
+}
+.schedule-section > summary::-webkit-details-marker {
+  display: none;
+}
+.schedule-section > summary > span {
+  flex: 1;
+  min-width: 0;
+}
+.schedule-section > summary strong,
+.schedule-section > summary small {
+  display: block;
+}
+.schedule-section > summary strong {
+  font-size: 16px;
+}
+.schedule-section > summary small {
+  margin-top: 3px;
+  line-height: 1.5;
+}
+.schedule-section > summary > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.schedule-section[open] > summary {
+  border-bottom: 1px solid var(--border);
+  background: var(--soft);
+  border-radius: 14px 14px 0 0;
+}
+.schedule-section[open] > summary > svg:last-child {
+  transform: rotate(180deg);
+}
+.schedule-section-content {
+  padding: 0 20px 20px;
+}
+.schedule-section summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+/* Sat i minut su obične padajuće liste, u istom okviru sa ikonom časovnika. */
+.time-field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+}
+.time-field legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 0;
+}
+.time-field-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 6px 12px;
+  background: white;
+}
+.time-field-controls > svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.time-field-controls select {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 3px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 16px;
+  cursor: pointer;
+}
+.time-field-controls:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--sage);
+}
+.time-field-controls select:disabled {
+  cursor: wait;
+}
+/* Zahtjevi su prvi sadržaj pregleda; brojevi ujedno služe kao filteri. */
+.requests-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.requests-heading h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.requests-heading p {
+  margin: 6px 0 0;
+}
+.requests-heading > button {
+  flex-shrink: 0;
+}
+.request-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.request-filters button {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 14px;
+  background: white;
+  color: var(--ink);
+}
+.request-filters button[aria-pressed="true"] {
+  background: var(--sage);
+  border-color: var(--primary);
+}
+.request-filters span {
+  display: block;
+  font-size: 12px;
+}
+.request-filters strong {
+  display: block;
+  font-size: 27px;
+  line-height: 1.5;
+}
+.server-booking-card {
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
+}
+.booking-needs-response {
+  border-left: 4px solid var(--primary);
+}
+.booking-time-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.booking-client-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  margin-block: 14px;
+}
+.booking-client-contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.booking-client-contact svg {
+  flex-shrink: 0;
+}
+.requests-empty {
+  text-align: center;
+  padding: 36px 20px;
+  background: white;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+}
+.requests-empty > svg {
+  color: var(--primary);
+}
+.requests-empty h3 {
+  margin: 10px 0 4px;
+}
+.requests-empty p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  .account-menu-trigger {
+    font-size: 11px;
+    padding: 9px;
+    min-height: 36px;
+  }
+  .account-menu-trigger > svg:first-child {
+    display: none;
+  }
+  .requests-heading {
+    flex-wrap: wrap;
+  }
+  .request-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .schedule-editor.auth-card {
+    padding: 20px 14px;
+  }
+  .schedule-section > summary {
+    padding: 16px 12px;
+    gap: 10px;
+  }
+  .schedule-section-content {
+    padding: 0 12px 16px;
+  }
+  .schedule-section > summary strong {
+    font-size: 14px;
+  }
+  .time-field-controls {
+    padding-inline: 9px;
+    gap: 6px;
+  }
+}
+/* Stvarni raspored i kalendar: zauzeti termini ostaju vidljivi, bez mogućnosti izbora. */
+.schedule-editor,
+.server-bookings {
+  margin-top: 28px;
+}
+.schedule-fields {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.schedule-price {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.schedule-price .field {
+  flex: 1;
+  min-width: 150px;
+}
+.schedule-form {
+  margin: 24px 0;
+}
+.session-editor {
+  margin-block: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.schedule-editor .availability-list {
+  list-style: none;
+  padding: 0;
+}
+.schedule-editor .availability-list li {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--border);
+}
+/* Formular izmjene zauzima cijelu širinu svog sedmičnog reda. */
+.schedule-editor .availability-list .schedule-form {
+  width: 100%;
+  min-width: 0;
+  margin-block: 0;
+}
+.server-calendar {
+  margin: 24px 0;
+}
+.server-calendar .time-options button:disabled {
+  opacity: 1;
+  background: #e8eae6;
+  color: #606963;
+  cursor: not-allowed;
+}
+.server-calendar .time-options small {
+  display: block;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.server-bookings details {
+  overflow-wrap: anywhere;
+  margin-top: 16px;
+}
+/* Lični formular ima zasebne akcije čuvanja i odustajanja, dostupne i na telefonu. */
+.account-profile-editor {
+  margin-block: 1.25rem;
+}
+.account-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.account-details {
+  display: grid;
+  gap: 16px;
+}
+.account-details div {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+}
+.account-details dt {
+  color: var(--muted);
+}
+.account-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.account-note {
+  margin-top: 24px;
+}
+/* Klijent prvo vidi termine, a zatim sažete i odvojene podatke svog profila. */
+.account-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.account-welcome h1 {
+  margin-block: 6px 10px;
+}
+.account-welcome p {
+  margin: 0;
+  max-width: 540px;
+}
+.account-initials {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  flex-shrink: 0;
+  border-radius: 22px;
+  background: var(--sage);
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 600;
+}
+.account-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+.account-shortcuts a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+.account-shortcuts a:hover {
+  background: var(--sage);
+  border-color: var(--primary);
+}
+.account-profile-card {
+  margin-top: 32px;
+}
+.account-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.account-section-heading h2 {
+  margin: 0;
+  font-size: 23px;
+}
+.account-section-heading p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.account-section-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--sage);
+  color: var(--primary);
+}
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.profile-summary-single {
+  grid-template-columns: 1fr;
+}
+.profile-summary-group {
+  min-width: 0;
+  padding: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+}
+.profile-summary-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+.profile-summary-details {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+.profile-summary-details dt {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.profile-summary-details dd {
+  margin: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.profile-email-verified {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  color: var(--primary);
+  font-size: 11px;
+}
+.profile-email-verified svg {
+  flex-shrink: 0;
+}
+/* Jedan formular čuva sve grupe atomskim API upisom; odustajanje ne šalje zahtjev. */
+.profile-form-fields {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.profile-form-fields > legend {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0;
+}
+.profile-form-group {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 20px;
+  margin: 24px 0;
+  background: var(--bg);
+}
+.profile-form-group > legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+.profile-form-group .field:last-child {
+  margin-bottom: 0;
+}
+.profile-form-group textarea {
+  width: 100%;
+  resize: vertical;
+}
+.profile-email-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 11px;
+  background: var(--sage);
+  overflow-wrap: anywhere;
+}
+.profile-email-note > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--primary);
+}
+.profile-email-note > span {
+  min-width: 0;
+}
+.profile-email-note strong,
+.profile-email-note small {
+  display: block;
+}
+.profile-email-note strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.profile-email-note small {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.profile-form-fields .account-profile-actions {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 22px;
+}
+/* Potvrđeni budući termin se izdvaja; sve rezervacije ostaju dostupne preko filtera. */
+.client-next-session {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  margin: 20px 0;
+  border: 1px solid #b8d9dc;
+  border-radius: 15px;
+  background: var(--sage);
+}
+.client-next-session > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.client-next-session > div {
+  flex: 1;
+  min-width: 0;
+}
+.client-next-session span,
+.client-next-session strong {
+  display: block;
+}
+.client-next-session span {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+.client-next-session strong {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.client-next-session p {
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+.client-next-session > a {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.client-booking-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.client-therapist-identity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+.client-therapist-identity > div:last-child {
+  min-width: 0;
+}
+.client-therapist-identity .avatar,
+.client-therapist-placeholder {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 17px;
+}
+.client-therapist-identity .avatar span {
+  font-size: 18px;
+}
+.client-therapist-placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--sage);
+  color: var(--primary);
+}
+.client-therapist-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+.client-therapist-identity h3 {
+  margin: 2px 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+.client-therapist-identity h3 a:hover {
+  text-decoration: underline;
+}
+.client-therapist-identity p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.client-session-name {
+  font-weight: 600;
+  margin: 20px 0 16px;
+}
+.client-booking-facts {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0;
+}
+.client-booking-facts > div {
+  min-width: 0;
+}
+.client-booking-facts dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+.client-booking-facts dd {
+  font-weight: 500;
+  margin: 0;
+  font-size: 14px;
+}
+.client-practice-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 14px 0;
+}
+.client-practice-address svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.client-booking-explanation {
+  padding: 12px 14px;
+  font-size: 13px;
+  background: var(--soft);
+  border-radius: 10px;
+}
+.client-booking-attention {
+  background: #eff4f9;
+  border: 1px solid #c9dcea;
+  color: #33566e;
+}
+.client-therapist-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-block: 16px;
+  font-size: 13px;
+}
+.client-booking-card .booking-actions:empty {
+  display: none;
+}
+.booking-history-list {
+  list-style: none;
+  padding: 0;
+}
+.booking-history-list li {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  font-size: 12px;
+}
+.booking-history-list strong {
+  font-weight: 500;
+}
+.booking-history-list time,
+.booking-history-list span {
+  color: var(--muted);
+}
+.requests-empty .button {
+  margin-top: 18px;
+}
+@media (max-width: 600px) {
+  .account-welcome {
+    gap: 12px;
+  }
+  .account-initials {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+  .account-welcome h1 {
+    font-size: 29px;
+  }
+  .account-profile-card {
+    padding: 22px 16px;
+  }
+  .account-section-heading h2 {
+    font-size: 21px;
+  }
+  .profile-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-summary-group,
+  .profile-form-group {
+    padding: 16px;
+  }
+  .client-booking-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .client-booking-facts {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .client-next-session {
+    flex-wrap: wrap;
+    padding: 18px;
+    gap: 12px;
+  }
+  .client-next-session > div {
+    flex-basis: calc(100% - 40px);
+  }
+  .client-next-session > a {
+    margin-left: 36px;
+  }
+  .client-booking-card {
+    padding: 22px 18px;
+  }
+}
+/* Terapeutska registracija odvaja lične podatke, stručni profil i početnu uslugu. */
+.therapist-registration-fields {
+  padding: 24px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 28px 0 0;
+  min-width: 0;
+}
+.therapist-registration-fields legend {
+  font-weight: 600;
+  padding-right: 12px;
+  color: var(--primary);
+}
+.therapist-registration-fields textarea {
+  width: 100%;
+  resize: vertical;
+}
+.therapist-account-profile {
+  margin-top: 24px;
+}
+/* Fotografije iz baze: profilna slika, javna galerija i uređivanje vlastitih fotografija. */
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.public-photo-gallery,
+.own-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  gap: 16px;
+  margin-block: 16px;
+}
+.public-photo-gallery img,
+.own-photo img {
+  display: block;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.own-photo > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.photos-editor {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 24px;
+}
+.therapist-account-biography {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.therapist-account-services {
+  list-style: none;
+  padding: 0;
+}
+.therapist-account-services li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 800px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-block: 32px 48px;
+  }
+  .auth-intro {
+    padding: 0;
+  }
+  .auth-intro h2 {
+    font-size: 29px;
+    max-width: none;
+  }
+  .auth-illustration {
+    display: none;
+  }
+  .auth-card {
+    padding: 24px;
+  }
+  .auth-card h1 {
+    font-size: 26px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

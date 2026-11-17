@@ -1,24 +1,24 @@
 // Početna stranica. Tekst i raspored su ovdje; pretraga samo otvara katalog sa URL parametrima.
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   ArrowUpRight,
-  BadgeCheck,
   CalendarDays,
   Check,
   HeartHandshake,
   Search,
-  Sparkles,
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useDemo } from "@/lib/demo-context";
-import { TherapistCard, Avatar } from "@/components/ui";
-import { therapists } from "@terapeut/domain";
+import { TherapistCard } from "@/components/ui";
+import { useDirectory } from "@/lib/directory-context";
 /** Prikazuje početnu stranicu; pretraga vodi u katalog i čuva filtere u adresi. */
 export default function Home() {
-  const { translate, state } = useDemo();
+  const { translate } = useDemo();
+  const { therapists } = useDirectory();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
@@ -39,6 +39,9 @@ export default function Home() {
       <section className="home-hero">
         <div className="container hero-grid">
           <div className="hero-content">
+            <span className="hero-brand-symbol" aria-hidden="true">
+              <Image src="/brand/symbol.png" alt="" width={44} height={40} />
+            </span>
             <span className="eyebrow">
               <span className="eyebrow-dot" />
               {translate(
@@ -79,83 +82,16 @@ export default function Home() {
               </span>
             </div>
           </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="art-arch">
-              <svg className="plant-art" viewBox="0 0 400 450">
-                <path
-                  d="M201 427C202 350 184 281 219 161"
-                  fill="none"
-                  stroke="#3b6659"
-                  strokeWidth="3"
-                />
-                <path
-                  d="M208 300C131 308 110 258 118 211C186 211 215 248 208 300Z"
-                  fill="#799b86"
-                />
-                <path
-                  d="M201 344C262 357 307 320 304 267C237 262 205 293 201 344Z"
-                  fill="#436e5c"
-                />
-                <path
-                  d="M211 219C155 205 145 159 163 122C218 135 232 174 211 219Z"
-                  fill="#a7b99c"
-                />
-                <path
-                  d="M217 177C276 182 307 141 296 93C238 95 210 127 217 177Z"
-                  fill="#648b72"
-                />
-                <path
-                  d="M226 139C200 101 209 57 247 38C277 73 266 120 226 139Z"
-                  fill="#8ba586"
-                />
-                <path
-                  d="M119 212L207 299M303 269L200 343M164 123L211 218M295 94L217 175M246 39L226 138"
-                  stroke="#eff3e9"
-                  strokeWidth="1.1"
-                  opacity=".5"
-                />
-                <path d="M153 428H251L239 375H166Z" fill="#e6ceb3" />
-                <path d="M163 375H241" stroke="#bd9b76" strokeWidth="2" />
-              </svg>
-              <div className="art-caption">
-                {translate("Prostor za rast.", "Room to grow.")}
-              </div>
-            </div>
-            <div className="floating-profile">
-              <Avatar therapist={therapists[0]} />
-              <div>
-                <strong>Ana Marković</strong>
-                <span>
-                  {translate(
-                    "Psihološkinja · Podgorica",
-                    "Psychologist · Podgorica",
-                  )}
-                </span>
-                <small>
-                  <BadgeCheck size={13} />
-                  {translate("Verifikovan profil", "Verified profile")}
-                </small>
-              </div>
-            </div>
-            <div className="floating-note">
-              <span className="note-icon">
-                <HeartHandshake size={21} />
-              </span>
-              <div>
-                <strong>
-                  {translate("Prvi korak je vaš.", "The first step is yours.")}
-                </strong>
-                <span>
-                  {translate(
-                    "Tu smo da olakšamo put.",
-                    "We’re here to make it easier.",
-                  )}
-                </span>
-              </div>
-            </div>
-            <span className="art-spark">
-              <Sparkles size={32} />
-            </span>
+          {/* Slika je dekoracija; pretraga i podaci stručnjaka ostaju povezani sa postojećim katalogom. */}
+          <div className="hero-landscape" aria-hidden="true">
+            <Image
+              src="/brand/nature.webp"
+              alt=""
+              width={1024}
+              height={1024}
+              sizes="(max-width: 800px) 100vw, 900px"
+              preload
+            />
           </div>
         </div>
       </section>
@@ -281,7 +217,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="therapist-grid home-cards">
-            {(state?.therapists || therapists)
+            {therapists
               .filter((candidateTherapist) => candidateTherapist.active)
               .slice(0, 3)
               .map((candidateTherapist) => (
@@ -293,8 +229,8 @@ export default function Home() {
           </div>
           <p className="sample-note">
             {translate(
-              "Prikazani profili su izmišljeni i služe za isprobavanje početne verzije.",
-              "These fictional profiles are provided to explore the initial version.",
+              "Profili se učitavaju iz baze. Lokalni katalog sadrži i izmišljene probne stručnjake.",
+              "Profiles are loaded from the database. The local directory also includes fictional sample professionals.",
             )}
           </p>
         </div>

@@ -15,6 +15,10 @@ const BUSY: BookingStatus[] = [
   "COMPLETED",
   "NO_SHOW",
 ];
+/** Određuje da li zahtjev zauzima vrijeme, bez obzira na trajanje izabrane seanse. */
+export function blocksTime(booking: Pick<Booking, "status">): boolean {
+  return BUSY.includes(booking.status);
+}
 /** Vraća datum YYYY-MM-DD u Crnoj Gori, nezavisno od vremenske zone računara. */
 export function dateKey(now: Date = new Date()): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -99,9 +103,9 @@ export function freeRanges(
   for (const booking of bookings) {
     const belongsToDay =
       booking.therapistId === therapist.id && booking.date === date;
-    const blocksTime = BUSY.includes(booking.status);
+    const isBusy = blocksTime(booking);
     // Kod A → B postojeći zahtjev ne smije sam sebe blokirati.
-    if (belongsToDay && blocksTime && booking.id !== ignoreBookingId) {
+    if (belongsToDay && isBusy && booking.id !== ignoreBookingId) {
       busyRanges.push({ start: booking.start, end: booking.end });
     }
   }
@@ -112,11 +116,19 @@ export function freeRanges(
   }
   busyRanges.sort((first, second) => first.start - second.start);
 
-  // 2. Polazimo od sati dostupnosti za izabrani dan u nedjelji.
+  // 2. Konkretan datum zamjenjuje sedmične sate. Ostali datumi i dalje koriste redovan raspored.
   let freeIntervals: TimeRange[] = [];
-  for (const window of therapist.availability) {
-    if (window.weekday === weekday(date)) {
-      freeIntervals.push({ start: window.start, end: window.end });
+  const specificDay = therapist.dateAvailability?.find(
+    (day) => day.date === date,
+  );
+  if (specificDay) {
+    if (specificDay.working)
+      freeIntervals.push({ start: specificDay.start, end: specificDay.end });
+  } else {
+    for (const window of therapist.availability) {
+      if (window.weekday === weekday(date)) {
+        freeIntervals.push({ start: window.start, end: window.end });
+      }
     }
   }
 

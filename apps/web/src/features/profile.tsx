@@ -12,12 +12,22 @@ import {
   Check,
 } from "lucide-react";
 import { useDemo } from "@/lib/demo-context";
-import { Avatar, Loading, Price, Verified } from "@/components/ui";
+import { Avatar, ProfileLoading, Price, Verified } from "@/components/ui";
+import { useDirectory } from "@/lib/directory-context";
+import { DirectoryError } from "@/components/directory-error";
+import { ProfileViewTracker } from "@/components/profile-view-tracker";
 /** Prikazuje javni profil, usluge i mogućnost zakazivanja za aktivnog terapeuta. */
 export function TherapistProfile({ id }: { id: string }) {
-  const { state, translate, locale } = useDemo();
-  if (!state) return <Loading />;
-  const therapist = state.therapists.find(
+  const { translate, locale } = useDemo();
+  const { therapists, loading, error } = useDirectory();
+  if (error) return <DirectoryError />;
+  if (loading)
+    return (
+      <div className="container page-space">
+        <ProfileLoading />
+      </div>
+    );
+  const therapist = therapists.find(
     (therapist) => therapist.id === id && therapist.active,
   );
   if (!therapist)
@@ -31,6 +41,7 @@ export function TherapistProfile({ id }: { id: string }) {
     );
   return (
     <div className="container page-space">
+      <ProfileViewTracker therapistId={therapist.id} />
       <Link href="/psychotherapy" className="back-link">
         <ArrowLeft size={16} />
         {translate("Svi stručnjaci", "All professionals")}
@@ -55,6 +66,30 @@ export function TherapistProfile({ id }: { id: string }) {
             <h2>{translate("O meni", "About me")}</h2>
             <p>{locale === "mne" ? therapist.bio : therapist.bioEn}</p>
           </div>
+          {!!therapist.photos?.length && (
+            <section className="profile-section">
+              <h2>{translate("Fotografije", "Photos")}</h2>
+              <div className="public-photo-gallery">
+                {therapist.photos.map((photo) => (
+                  <a
+                    key={photo.id}
+                    href={photo.url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img
+                      src={photo.url}
+                      alt={translate(
+                        `Fotografija profila ${therapist.name}`,
+                        `Profile photo of ${therapist.name}`,
+                      )}
+                      loading="lazy"
+                    />
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
           <div className="profile-section">
             <h2>{translate("Pristup radu", "My approach")}</h2>
             <div className="tags tags-lg">
@@ -172,8 +207,8 @@ export function TherapistProfile({ id }: { id: string }) {
           </div>
           <p className="sample-note">
             {translate(
-              "Izmišljeni profil za demonstraciju.",
-              "Fictional demonstration profile.",
+              "Podaci profila i fotografije učitavaju se iz baze. Rezervacije su još lokalna demonstracija.",
+              "Profile information and photos are loaded from the database. Bookings are still a local demonstration.",
             )}
           </p>
         </aside>

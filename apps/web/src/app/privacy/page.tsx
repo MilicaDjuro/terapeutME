@@ -18,11 +18,17 @@ export default function Privacy() {
       <h2>{translate("Gdje se podaci čuvaju?", "Where is data stored?")}</h2>
       <p>
         {translate(
-          "Zahtjevi i izmjene čuvaju se u lokalnom skladištu ovog browsera. Nema slanja emaila, naloga na serveru ni razmjene podataka sa stvarnim terapeutima. Koristite samo probne kontakt podatke.",
-          "Requests and changes are saved in this browser’s local storage. No emails are sent, no server accounts are created and no data is shared with real therapists. Use sample contact details only.",
+          "Demo zahtjevi i izmjene čuvaju se u lokalnom skladištu browsera. Registracija čuva ime, prezime, email, datum rođenja i hash lozinke u serverskoj bazi nakon potvrde email koda. Terapeutska registracija dodatno čuva stručno zvanje, biografiju, grad, telefon, opcionu adresu i početnu uslugu. Prijava koristi sesijski kolačić. Kod se šalje preko podešenog email servisa; u lokalnom testiranju poruke ostaju u testnom sandučetu. Demo rezervacije ne dijele podatke sa stvarnim terapeutima.",
+          "Demo requests and changes are saved in browser storage. Registration stores your first name, last name, email, date of birth and password hash in the server database after email verification. Therapist registration also stores your professional title, biography, city, phone, optional address and first service. Sign-in uses a session cookie. Codes are sent through the configured email service; local testing retains messages in a test inbox. Demo bookings do not share data with real therapists.",
         )}
       </p>
       <h2>{translate("Ko vidi podatke?", "Who can see the data?")}</h2>
+      <p>
+        {translate(
+          "Svako otvaranje ili osvježavanje javnog profila bilježimo u serverskoj bazi, uključujući ponavljanja. Prijavljene posjetioce razlikujemo po nalogu, a neprijavljene po nasumičnom browser kolačiću koji traje 30 dana. Različiti browseri ili brisanje kolačića mogu istu osobu prikazati više puta. Terapeut vidi brojeve i oznake posjetilaca za svoj profil, bez njihovih imena, email adresa i identifikatora naloga. IP adrese se ne čuvaju u događajima pregleda.",
+          "We record each public profile opening or reload in the server database, including repeat visits. Signed-in visitors are distinguished by account; anonymous visitors use a random 30-day browser cookie. Different browsers or clearing cookies can count the same person more than once. Therapists see counts and visitor labels for their own profile, without names, email addresses or account identifiers. IP addresses are not stored in view events.",
+        )}
+      </p>
       <p>
         {translate(
           "Sve demo uloge dostupne su u istom browseru, bez prijavljivanja. Svako sa pristupom tom browseru može otvoriti probni pregled i vidjeti sačuvane podatke.",
@@ -32,8 +38,8 @@ export default function Privacy() {
       <h2>{translate("Uklanjanje demo podataka", "Removing demo data")}</h2>
       <p>
         {translate(
-          "Probne podatke možete vratiti na početno stanje iz pregleda ili obrisati podatke ovog sajta u podešavanjima browsera. Preuzeti Excel fajlovi ostaju na vašem uređaju dok ih sami ne uklonite.",
-          "Restore sample data from the dashboard or clear this site’s data in your browser settings. Downloaded Excel files remain on your device until you remove them.",
+          "Probne podatke možete vratiti na početno stanje iz pregleda ili obrisati podatke ovog sajta u podešavanjima browsera. To ne briše serverski nalog; brisanje naloga još nije implementirano. Preuzeti Excel fajlovi ostaju na vašem uređaju dok ih sami ne uklonite.",
+          "Restore sample data from the dashboard or clear this site’s data in your browser settings. This does not delete your server account; account deletion is not implemented yet. Downloaded Excel files remain on your device until you remove them.",
         )}
       </p>
       <h2>{translate("Prije stvarnog lansiranja", "Before a live launch")}</h2>

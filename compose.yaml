@@ -17,5 +17,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  # Lokalno testno sanduče prima SMTP poruke; ne dostavlja ih na stvarni email.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
 volumes:
   terapeut_data:

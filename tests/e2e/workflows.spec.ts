@@ -33,7 +33,7 @@ test("public pages, URL filters and English language switch work", async ({
 test("a client selects a service and calendar time and submits a held request", async ({
   page,
 }) => {
-  await page.goto("/therapist/ana-markovic/book");
+  await page.goto("/demo/therapist/ana-markovic/book");
   await page.getByRole("button", { name: /Individualna seansa/ }).click();
   await expect(page.locator(".calendar-picker")).toBeVisible();
   await page.locator(".time-options button").first().click();
@@ -70,7 +70,11 @@ test("a client selects a service and calendar time and submits a held request", 
 test("therapist proposal holds B immediately, client accepts and cancels it", async ({
   page,
 }) => {
-  await page.goto("/dashboard?mode=therapist");
+  await page.goto("/demo/dashboard?mode=therapist");
+  // Čekamo učitan zahtjev prije čitanja skladišta; goto može završiti prije React effect-a.
+  await expect(
+    page.getByRole("button", { name: "Predloži drugi termin", exact: true }),
+  ).toBeVisible();
   const original = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("terapeut-me.demo.v1")!).bookings.find(
       (b: { id: string }) => b.id === "demo-pending",
@@ -125,7 +129,7 @@ test("therapist proposal holds B immediately, client accepts and cancels it", as
 test("therapist service edits and availability conflicts are validated", async ({
   page,
 }) => {
-  await page.goto("/dashboard?mode=therapist");
+  await page.goto("/demo/dashboard?mode=therapist");
   await page
     .getByRole("button", { name: "Usluge i dostupnost", exact: true })
     .click();
@@ -151,7 +155,7 @@ test("therapist service edits and availability conflicts are validated", async (
 
 // Provjerava da rani sati ostaju vidljivi u nedjeljnom kalendaru.
 test("weekly calendar includes availability before 08:00", async ({ page }) => {
-  await page.goto("/dashboard?mode=therapist");
+  await page.goto("/demo/dashboard?mode=therapist");
   await page
     .getByRole("button", { name: "Usluge i dostupnost", exact: true })
     .click();
@@ -181,7 +185,7 @@ test("weekly calendar includes availability before 08:00", async ({ page }) => {
 
 // Provjerava verifikaciju i otvara preuzeti Excel da potvrdi stvaran sadržaj.
 test("admin verification and a real Excel download work", async ({ page }) => {
-  await page.goto("/dashboard?mode=admin");
+  await page.goto("/demo/dashboard?mode=admin");
   const row = page.getByRole("row").filter({ hasText: "Jelena Petrović" });
   await row.getByRole("button", { name: "Verifikuj", exact: true }).click();
   await expect(
@@ -209,8 +213,8 @@ test("mobile pages remain usable without horizontal overflow", async ({
     "/",
     "/psychotherapy",
     "/therapist/ana-markovic",
-    "/therapist/ana-markovic/book",
-    "/dashboard?mode=therapist",
+    "/demo/therapist/ana-markovic/book",
+    "/demo/dashboard?mode=therapist",
     "/faq",
   ]) {
     await page.goto(route);

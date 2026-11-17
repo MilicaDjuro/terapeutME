@@ -1,7 +1,66 @@
 // NestJS modul je spisak dijelova aplikacije koje treba uključiti.
 import { Module } from "@nestjs/common";
 import { HealthController } from "./health.controller";
+import { DatabaseService } from "./database.service";
+import { AuthController, AuthOriginGuard } from "./auth/auth.controller";
+import { AuthService } from "./auth/auth.service";
+import { EmailService } from "./auth/email.service";
+import { PasswordResetService } from "./auth/password-reset.service";
+import {
+  DirectoryController,
+  OwnPhotosController,
+  PublicPhotosController,
+  PhotoSessionGuard,
+} from "./directory/directory.controller";
+import { DirectoryService } from "./directory/directory.service";
+import { PhotosService } from "./directory/photos.service";
+import { BookingController } from "./bookings/booking.controller";
+import { BookingService } from "./bookings/booking.service";
+import { BookingRepository } from "./bookings/booking.repository";
+import { BookingNotificationService } from "./notifications/booking-notification.service";
+import { RecurringBookingService } from "./bookings/recurring-booking.service";
+import { RecurringBookingController } from "./bookings/recurring-booking.controller";
+import { WaitlistService } from "./bookings/waitlist.service";
+import { WaitlistController } from "./bookings/waitlist.controller";
+import {
+  MaterialsController,
+  MaterialsSessionGuard,
+} from "./materials/materials.controller";
+import { MaterialsService } from "./materials/materials.service";
+import { AnalyticsController } from "./analytics/analytics.controller";
+import { AnalyticsService } from "./analytics/analytics.service";
 
-// Za sada uključujemo samo provjeru rada. Ovdje se kasnije registruju novi moduli.
-@Module({ controllers: [HealthController] })
+// Auth, raspored i rezervacije koriste bazu i zajednička poslovna pravila.
+@Module({
+  controllers: [
+    HealthController,
+    AuthController,
+    DirectoryController,
+    OwnPhotosController,
+    PublicPhotosController,
+    BookingController,
+    RecurringBookingController,
+    WaitlistController,
+    MaterialsController,
+    AnalyticsController,
+  ],
+  providers: [
+    DatabaseService,
+    AuthService,
+    EmailService,
+    PasswordResetService,
+    AuthOriginGuard,
+    DirectoryService,
+    PhotosService,
+    PhotoSessionGuard,
+    BookingService,
+    BookingRepository,
+    BookingNotificationService,
+    RecurringBookingService,
+    WaitlistService,
+    MaterialsService,
+    MaterialsSessionGuard,
+    AnalyticsService,
+  ],
+})
 export class AppModule {}

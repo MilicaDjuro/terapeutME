@@ -46,6 +46,36 @@ test("60-minute services fit completely inside 16–20 availability, with 15-min
   assert.equal(starts[0], 960);
   assert.equal(starts.at(-1), 1140);
 });
+test("a specific date replaces weekly hours without changing following weeks", () => {
+  const therapist = professional();
+  therapist.dateAvailability = [
+    { id: "date", date: day, working: true, start: 540, end: 720 },
+  ];
+  const starts = availableStarts(therapist, day, 50, [], now);
+  assert.equal(starts[0], 540);
+  assert.ok(!starts.includes(960));
+  assert.equal(availableStarts(therapist, "2026-10-13", 60, [], now)[0], 960);
+});
+test("a specific working date can open a closed weekday or mark a whole date closed", () => {
+  const therapist = professional();
+  therapist.availability = [];
+  therapist.dateAvailability = [
+    { id: "date", date: day, working: true, start: 540, end: 720 },
+  ];
+  assert.equal(availableStarts(therapist, day, 40, [], now)[0], 540);
+  therapist.dateAvailability[0].working = false;
+  assert.deepEqual(availableStarts(therapist, day, 40, [], now), []);
+});
+test("date hours still subtract bookings and preserve starts immediately after the previous session", () => {
+  const therapist = professional();
+  therapist.dateAvailability = [
+    { id: "date", date: day, working: true, start: 540, end: 720 },
+  ];
+  const existing = { ...booking(therapist, 540), duration: 50, end: 590 };
+  const starts = availableStarts(therapist, day, 40, [existing], now);
+  assert.equal(starts[0], 590);
+  assert.ok(!starts.includes(570));
+});
 test("the next free interval starts at 16:15 when an appointment ends at 16:15", () => {
   const t = professional();
   const short = { ...booking(t), start: 960, end: 975, duration: 15 };

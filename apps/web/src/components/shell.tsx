@@ -1,6 +1,7 @@
 // Zajednički okvir stranica: navigacija, jezik, mobilni meni i footer. Nema pravila rezervacija.
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ArrowUpRight,
@@ -11,28 +12,36 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useDemo } from "@/lib/demo-context";
+import { useAuth } from "@/lib/auth-context";
+import { AccountMenu } from "./account-menu";
 /** Prikazuje znak i naziv Terapeut.me kao link ka početnoj stranici. */
 export function Brand() {
   return (
     <Link href="/" className="brand" aria-label="Terapeut.me — početna">
-      <span className="brand-symbol">
-        <svg viewBox="0 0 32 32" fill="none">
-          <path
-            d="M16 26V15M16 20C6 20 4 13 6 6c7 0 11 5 10 14ZM16 16c0-7 5-11 11-10 1 7-3 12-11 10Z"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-      terapeut<span className="brand-me">.me</span>
+      {/* Lokalni logo se prikazuje bez zavisnosti od dostupnosti referentnog sajta. */}
+      <Image
+        className="brand-logo"
+        src="/brand/logo.png"
+        alt="terapeut.me"
+        width={180}
+        height={36}
+        loading="eager"
+      />
+      <Image
+        className="brand-mobile-symbol"
+        src="/brand/symbol.png"
+        alt=""
+        width={36}
+        height={33}
+        loading="eager"
+      />
     </Link>
   );
 }
 /** Prikazuje zajedničku navigaciju, izbor jezika, mobilni meni i footer oko stranice. */
 export function Shell({ children }: { children: React.ReactNode }) {
   const { translate, locale, setLocale, notice } = useDemo();
+  const { user } = useAuth();
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const links = [
@@ -46,15 +55,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
     },
     { href: "/faq", label: translate("Česta pitanja", "FAQ") },
   ];
+  if (user?.role === "THERAPIST")
+    links.unshift({
+      href: "/dashboard",
+      label: translate("Moj pregled", "My dashboard"),
+    });
   return (
     <>
       <div className="demo-strip">
         {translate(
-          "Početna verzija · Probni profili i podaci · Bez slanja emaila",
-          "Initial version · Sample profiles and data · No emails sent",
+          "Radno vrijeme i rezervacije povezani sa vašim nalogom",
+          "Working hours and bookings connected to your account",
         )}
-        <Link href="/dashboard">
-          {translate("Isprobaj pregled", "Explore the dashboard")}
+        <Link href="/demo/dashboard">
+          {translate("Demo pregled", "Demo dashboard")}
           <ArrowUpRight size={12} />
         </Link>
       </div>
@@ -86,13 +100,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               {locale === "mne" ? "EN" : "MNE"}
             </button>
-            <Link
-              href="/dashboard"
-              className="button button-outline button-sm dashboard-link"
-            >
-              {translate("Moj pregled", "My dashboard")}
-              <ArrowUpRight size={14} />
-            </Link>
+            {user ? (
+              <AccountMenu />
+            ) : (
+              <Link
+                href="/login"
+                className="button button-outline button-sm dashboard-link"
+              >
+                {translate("Prijavi se", "Sign in")}
+                <ArrowUpRight size={14} />
+              </Link>
+            )}
             <button
               className="icon-button mobile-menu"
               aria-label={translate("Otvori navigaciju", "Open navigation")}
@@ -113,9 +131,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
             {[
               ...links,
               {
-                href: "/dashboard",
-                label: translate("Moj pregled", "My dashboard"),
+                href: user ? "/account" : "/login",
+                label: user
+                  ? translate("Moj nalog", "My account")
+                  : translate("Prijavi se", "Sign in"),
               },
+              ...(!user
+                ? [
+                    {
+                      href: "/register",
+                      label: translate("Registruj se", "Register"),
+                    },
+                  ]
+                : []),
             ].map((link) => (
               <Link
                 key={link.href}

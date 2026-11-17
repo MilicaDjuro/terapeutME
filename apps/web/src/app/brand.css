@@ -1,0 +1,1021 @@
+/* Vizuelni sloj po uzoru na terapeut.me. Raspored formulara i poslovna pravila ostaju u postojećim fajlovima. */
+
+/* 01. Tipografija i zajedničke površine. Fontovi se učitavaju lokalno kroz brand-fonts.css. */
+body {
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.button {
+  border-radius: 10px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+.button-primary {
+  box-shadow: 0 2px 4px #172b3a12;
+}
+.button-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px #176e7226;
+}
+.button-outline:hover:not(:disabled) {
+  background: var(--sage);
+  border-color: var(--primary);
+}
+.button:disabled {
+  transform: none;
+}
+.button-soft,
+.step-icon,
+.care-icon,
+.account-section-icon {
+  background: #e5f2f5;
+  color: #187f90;
+}
+.auth-card,
+.therapist-card,
+.booking-card,
+.step-card,
+.schedule-section,
+.filter-panel,
+.booking-summary,
+.calendar-picker {
+  box-shadow: 0 1px 3px #172b3a08;
+}
+.field input,
+.field select,
+.field textarea {
+  border-color: var(--border);
+  border-radius: 10px;
+  background: white;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px #176e7212;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary);
+}
+
+/* 02. Originalni logo i prozračno zaglavlje; isti linkovi, meni naloga i jezik. */
+.demo-strip {
+  background: #e3eeec;
+  color: #526e76;
+}
+.site-header {
+  background: #ffffffeb;
+  backdrop-filter: blur(16px);
+}
+.header-inner {
+  height: 76px;
+  gap: 22px;
+}
+.brand {
+  flex-shrink: 0;
+}
+.brand-logo {
+  display: block;
+  width: 180px;
+  height: auto;
+}
+.brand-mobile-symbol {
+  display: none;
+}
+.desktop-nav {
+  gap: 7px;
+}
+.desktop-nav a {
+  padding: 10px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+.desktop-nav a:hover,
+.desktop-nav a.active {
+  background: #176e720b;
+}
+.language-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  min-width: 39px;
+  min-height: 32px;
+  padding: 7px 10px;
+  background: white;
+  color: var(--primary);
+  font-size: 11px;
+}
+.header-actions .dashboard-link {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.header-actions .dashboard-link:hover {
+  background: var(--primary-dark);
+}
+.account-dropdown {
+  box-shadow: 0 12px 36px #172b3a14;
+  animation: brand-enter 160ms ease both;
+}
+.mobile-nav {
+  background: white;
+}
+
+/* 03. Centrirana početna, znak brenda i mirna fotografija sa referentnog sajta. */
+.home-hero {
+  background: var(--bg);
+}
+.home-hero::before,
+.home-hero::after {
+  content: "";
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: #176e7204;
+  pointer-events: none;
+}
+.home-hero::before {
+  top: 30px;
+  right: -240px;
+}
+.home-hero::after {
+  bottom: 50px;
+  left: -270px;
+}
+.hero-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-block: 44px 64px;
+  min-height: 0;
+}
+.hero-content {
+  max-width: 780px;
+  text-align: center;
+  animation: brand-enter 550ms ease both;
+}
+.hero-brand-symbol {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  border: 1px solid #c4dfe1;
+  background: #ffffffb3;
+}
+.hero-content .eyebrow {
+  justify-content: center;
+  font-size: 10px;
+}
+.hero-content h1 {
+  font-size: clamp(34px, 4.5vw, 52px);
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  margin-bottom: 20px;
+}
+.hero-content h1 span {
+  color: var(--primary);
+}
+.hero-description {
+  max-width: 610px;
+  margin: 0 auto 24px;
+  font-size: 17px;
+  line-height: 1.75;
+}
+.hero-reassurance {
+  justify-content: center;
+  margin-top: 20px;
+  gap: 12px 22px;
+}
+.hero-reassurance span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.hero-reassurance svg {
+  color: var(--primary);
+}
+.hero-landscape {
+  width: min(900px, 100%);
+  height: 210px;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid #bdd0cf;
+  animation: brand-enter 700ms ease both;
+}
+.hero-landscape img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 54%;
+}
+.quick-search {
+  max-width: 1080px;
+  margin-inline: auto;
+  box-shadow: 0 4px 16px #172b3a08;
+  border-radius: 16px;
+}
+.step-card {
+  text-align: center;
+  padding: 28px;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+.step-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px #172b3a0b;
+}
+.step-top {
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.step-number {
+  color: #2291a0;
+  font-size: 13px;
+  font-weight: 700;
+}
+.step-card p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.featured-section {
+  background: #e7efed;
+}
+.care-banner {
+  background: #e6f0f0;
+  border-color: #c4dfe1;
+}
+
+/* 04. Profili, kalendar i radni prostor dijele boje; statusi zadržavaju svoja značenja. */
+.therapist-card:hover {
+  box-shadow: 0 8px 24px #172b3a0e;
+}
+.avatar:not(.peach):not(.lavender):not(.sand) {
+  background: #dceced;
+  color: var(--primary);
+}
+.card-bio,
+.card-location,
+.card-title,
+.booking-history-list time,
+.booking-history-list span {
+  color: var(--muted);
+}
+.tags > span {
+  background: #eff5f4;
+  border-color: #dce6e5;
+  color: #526e76;
+}
+.request-filters button {
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+}
+.request-filters button:hover {
+  border-color: #7fadb1;
+}
+.request-filters button[aria-pressed="true"] {
+  background: #e5f1f2;
+  color: var(--primary);
+}
+.request-filters strong,
+.account-initials {
+  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+}
+.schedule-section > summary {
+  transition: background 180ms ease;
+}
+.schedule-section > summary:hover {
+  background: #f0f6f5;
+  border-radius: 14px;
+}
+.schedule-section > summary > svg:last-child {
+  transition: transform 200ms ease;
+}
+.schedule-section[open] > summary:hover {
+  border-radius: 14px 14px 0 0;
+}
+.schedule-section-content {
+  background: white;
+  border-radius: 0 0 14px 14px;
+}
+.time-field-controls select {
+  background: #f0f6f5;
+}
+.client-next-session {
+  background: #e3f0f1;
+  border-color: #b8d9dc;
+}
+.booking-history-list li {
+  border-left-color: #c4dfe1;
+}
+.booking-card details > summary {
+  color: var(--primary);
+  cursor: pointer;
+}
+.profile-summary-group,
+.profile-form-group,
+.client-booking-facts {
+  background: #f7faf9;
+}
+
+/* 05. Prijava i registracija: ista dekorativna slika, bez izmjena slanja ili čuvanja formulara. */
+.auth-intro {
+  padding-top: 20px;
+}
+.auth-intro h2 {
+  font-size: 36px;
+  line-height: 1.25;
+}
+.auth-illustration {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-block: 28px;
+  border: 1px solid #c4d6d5;
+}
+.auth-illustration > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 55%;
+}
+.auth-illustration > span {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  background: #fffffff0;
+  border-radius: 12px;
+  color: var(--primary);
+}
+.site-footer {
+  background: #e6edeb;
+}
+.site-footer .brand-logo {
+  width: 155px;
+}
+
+/* 06. Kratko pojavljivanje i hover su samo dekoracija; sadržaj ne zavisi od JavaScripta za animaciju. */
+@keyframes brand-enter {
+  from {
+    opacity: 0.45;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 1100px) {
+  .desktop-nav {
+    gap: 1px;
+  }
+  .desktop-nav a {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+  .header-inner {
+    gap: 14px;
+  }
+  .header-actions {
+    gap: 10px;
+  }
+  .brand-logo {
+    width: 155px;
+  }
+  .quick-search {
+    grid-template-columns: 140px minmax(0, 1fr) 150px 110px;
+    gap: 16px;
+  }
+}
+@media (max-width: 800px) {
+  .header-inner {
+    height: 68px;
+  }
+  .quick-search {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .quick-search > .button {
+    grid-column: 1 / -1;
+  }
+  .search-intro {
+    display: none;
+  }
+  .hero-grid {
+    padding-top: 34px;
+  }
+  .auth-intro h2 {
+    max-width: none;
+  }
+  .auth-illustration {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .header-inner {
+    height: 64px;
+    gap: 10px;
+  }
+  .site-header .brand-logo {
+    display: none;
+  }
+  .site-header .brand-mobile-symbol {
+    display: block;
+    width: 34px;
+    height: auto;
+  }
+  .header-actions {
+    gap: 8px;
+    margin-left: auto;
+  }
+  .hero-content {
+    max-width: 100%;
+  }
+  .hero-brand-symbol {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 16px;
+  }
+  .hero-content h1 {
+    font-size: 34px;
+  }
+  .hero-description {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .hero-reassurance {
+    gap: 10px 16px;
+  }
+  .hero-reassurance span {
+    font-size: 10px;
+  }
+  .hero-grid {
+    gap: 26px;
+    padding-block: 30px 48px;
+  }
+  .hero-landscape {
+    height: 150px;
+    border-radius: 14px;
+  }
+  .hero-content .eyebrow {
+    font-size: 8px;
+  }
+  .quick-search {
+    padding: 20px;
+  }
+  .quick-search input,
+  .quick-search select {
+    font-size: 13px;
+  }
+  .step-card {
+    padding: 24px;
+  }
+  .auth-intro h2 {
+    font-size: 29px;
+  }
+  .request-filters button {
+    padding: 12px;
+  }
+}
+/* Korisnik koji smanji kretanje dobija statičan prikaz, uključujući spinner i dropdown. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .button-primary:hover:not(:disabled),
+  .step-card:hover,
+  .therapist-card:hover {
+    transform: none;
+  }
+}
+
+/* Stalni termini: izdvojeno pravilo, pojedinacne seanse i vidljivi datumi za provjeru. */
+.recurring-overview {
+  margin-block: 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: white;
+}
+.recurring-overview > summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 18px;
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 600;
+}
+.recurring-overview > summary strong {
+  font-size: 12px;
+  color: var(--danger);
+}
+.recurring-rule {
+  padding: 20px;
+  border-top: 1px solid var(--border);
+}
+.recurring-rule h3 {
+  font-size: 17px;
+}
+.recurring-issue {
+  background: var(--soft);
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-block: 12px;
+}
+.recurring-issue summary {
+  cursor: pointer;
+  color: var(--primary);
+}
+.recurring-issue form {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  max-width: 420px;
+}
+.recurring-create {
+  border-top: 1px solid var(--border);
+  margin-top: 18px;
+  padding-top: 16px;
+}
+.recurring-create form {
+  margin-top: 16px;
+}
+.recurring-booking-note {
+  font-size: 12px;
+  color: var(--primary);
+  margin-top: 16px;
+}
+.recurring-stop-confirmation {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.recurring-create .checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.recurring-create .checkbox-field input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+}
+
+/* Lista čekanja koristi iste kartice i padajuće sekcije; formular se prilagođava telefonu. */
+.waitlist-form > summary,
+.waitlist-busy-times > summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 600;
+  padding-block: 12px;
+}
+.waitlist-fields {
+  border: 0;
+  padding: 0;
+  margin: 0 0 20px;
+  min-width: 0;
+}
+.waitlist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.waitlist-days {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.waitlist-days legend {
+  padding-inline: 6px;
+  font-weight: 600;
+}
+.waitlist-days .checkbox-label {
+  margin: 0;
+}
+.waitlist-explanation {
+  padding: 0 24px;
+}
+
+/* Privatni materijali prate postojeće kartice, sa čitljivim uputstvima i kontrolama na telefonu. */
+.materials-section {
+  margin-block: 40px;
+  scroll-margin-top: 120px;
+}
+.materials-section .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.materials-client-picker,
+.material-editor,
+.material-card {
+  background: var(--white, #fff);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  min-width: 0;
+}
+.materials-client-picker,
+.material-editor {
+  margin-bottom: 20px;
+}
+.material-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.materials-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.materials-list {
+  display: grid;
+  gap: 20px;
+}
+.material-card h3,
+.material-card p,
+.material-file span {
+  overflow-wrap: anywhere;
+}
+.material-instructions {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+.material-kind {
+  display: inline-block;
+  border-radius: 8px;
+  background: var(--background, #edf3f0);
+  color: var(--primary);
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.material-file {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: var(--background, #edf3f0);
+  border-radius: 12px;
+  padding: 16px;
+  margin-block: 16px;
+}
+.material-file > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.material-file span {
+  flex: 1;
+  min-width: 0;
+}
+.material-file small {
+  display: block;
+  color: var(--muted);
+}
+.material-archive-confirmation {
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+  padding-top: 8px;
+}
+.materials-empty {
+  padding-block: 20px;
+  color: var(--muted);
+}
+@media (max-width: 600px) {
+  .materials-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .material-file {
+    flex-wrap: wrap;
+  }
+  .material-file .button {
+    width: 100%;
+  }
+  .materials-client-picker,
+  .material-editor,
+  .material-card {
+    padding: 18px;
+  }
+}
+.waitlist-overview .recurring-rule a {
+  display: inline-block;
+  margin-block: 8px;
+}
+@media (max-width: 600px) {
+  .waitlist-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Analitika koristi postojeće boje; tabela se na telefonu pomjera unutar svoje kartice. */
+.analytics-page {
+  max-width: 1200px;
+}
+.analytics-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.analytics-controls label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 14px;
+}
+.analytics-controls select {
+  min-width: 180px;
+  padding: 12px 35px 12px 14px;
+  background: white;
+  border: 1px solid #cbdad6;
+  border-radius: 12px;
+  color: #172b3a;
+  font: inherit;
+}
+.analytics-period {
+  margin: 0 0 22px;
+  font-size: 14px;
+}
+/* Sadašnje čekanje je odvojeno od primljenih zahtjeva u istoriji perioda. */
+.analytics-current {
+  margin-bottom: 38px;
+}
+.analytics-current-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.analytics-current .analytics-metric h3 {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+.analytics-current > .back-link {
+  margin-top: 18px;
+}
+@media (max-width: 900px) {
+  .analytics-current-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Dodatne tabele odvajaju sve klikove od broja različitih posjetilaca. */
+.analytics-visitors {
+  margin: 32px 0;
+}
+.analytics-visitors .analytics-metric h3 {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+.analytics-audiences,
+.analytics-individuals {
+  margin-top: 20px;
+}
+.analytics-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+.analytics-audiences table {
+  min-width: 600px;
+}
+.analytics-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.analytics-metric {
+  background: white;
+  border: 1px solid #d3dfdb;
+  border-radius: 22px;
+  padding: 24px;
+}
+.analytics-metric > svg {
+  color: #176e72;
+  margin-bottom: 14px;
+}
+.analytics-metric h2 {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+.analytics-metric > strong {
+  display: block;
+  font-size: 42px;
+  line-height: 1.4;
+  color: #176e72;
+  font-variant-numeric: tabular-nums;
+}
+.analytics-metric p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #617786;
+  margin: 7px 0 0;
+}
+.analytics-conversion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 30px;
+  margin-top: 24px;
+  background: #e0efec;
+  border: 1px solid #c2dcd5;
+  border-radius: 22px;
+}
+.analytics-conversion h2 {
+  margin: 10px 0;
+}
+.analytics-conversion p {
+  max-width: 710px;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 10px 0 0;
+}
+.analytics-rate {
+  font-size: clamp(38px, 6vw, 62px);
+  white-space: nowrap;
+  color: #176e72;
+}
+.analytics-note {
+  color: #617786;
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 18px 0 28px;
+}
+.analytics-activity {
+  padding: 28px;
+  background: white;
+  border: 1px solid #d3dfdb;
+  border-radius: 22px;
+}
+.analytics-activity h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.analytics-activity > p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.analytics-legend {
+  display: flex;
+  gap: 24px;
+  margin: 24px 0;
+  font-size: 14px;
+}
+.analytics-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: #176e72;
+  margin-right: 8px;
+}
+.analytics-legend span + span::before {
+  background: #9acdc3;
+}
+.analytics-chart {
+  height: 180px;
+  display: flex;
+  gap: 3px;
+  border-bottom: 1px solid #d3dfdb;
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0,
+    transparent 44px,
+    #edf3f0 44px,
+    #edf3f0 45px
+  );
+}
+.analytics-chart-day {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1px;
+}
+.analytics-chart-day span {
+  display: block;
+  width: 45%;
+  background: #176e72;
+  border-radius: 3px 3px 0 0;
+}
+.analytics-chart-day span + span {
+  background: #9acdc3;
+}
+.analytics-chart-dates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #617786;
+  margin: 10px 0 24px;
+}
+.analytics-activity summary {
+  cursor: pointer;
+  color: #176e72;
+  font-weight: 600;
+  padding: 12px 0;
+}
+.analytics-table-scroll {
+  overflow-x: auto;
+}
+.analytics-table-scroll table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.analytics-table-scroll caption {
+  text-align: left;
+  padding: 16px 0;
+  color: #617786;
+}
+.analytics-table-scroll th,
+.analytics-table-scroll td {
+  text-align: right;
+  border-bottom: 1px solid #e1e9e5;
+  padding: 14px 10px;
+  font-variant-numeric: tabular-nums;
+}
+.analytics-table-scroll th:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+@media (max-width: 800px) {
+  .analytics-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .analytics-conversion {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+@media (max-width: 480px) {
+  .analytics-metrics {
+    gap: 10px;
+  }
+  .analytics-metric {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .analytics-metric h2 {
+    font-size: 14px;
+  }
+  .analytics-conversion,
+  .analytics-activity {
+    padding: 20px;
+  }
+  .analytics-controls {
+    width: 100%;
+  }
+  .analytics-chart {
+    gap: 1px;
+  }
+}

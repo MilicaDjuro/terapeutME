@@ -3,11 +3,23 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { Pool } from "pg";
 
-/** Redom primjenjuje dodatne migracije; postojeća baza i njeni podaci se čuvaju. */
+/** Priprema praznu bazu ili nadograđuje postojeću; ne briše podatke i ne uvozi demo naloge. */
 async function migrate() {
   if (!process.env.DATABASE_URL) throw new Error("Nedostaje DATABASE_URL.");
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   try {
+    // Samo prazna šema dobija početne tabele. Postojeću bazu mijenjaju isključivo dodatne migracije.
+    const tables = await pool.query(
+      "SELECT tablename FROM pg_tables WHERE schemaname=current_schema()",
+    );
+    if (tables.rowCount === 0) {
+      const schema = await readFile(
+        resolve(__dirname, "../../../db/schema.sql"),
+        "utf8",
+      );
+      await pool.query(schema);
+      console.log("Početna šema je kreirana bez demo podataka.");
+    }
     for (const filename of [
       "002-auth.sql",
       "003-therapist-registration.sql",
@@ -48,7 +60,7 @@ async function migrate() {
     await pool.end();
   }
 }
-// Migracija je zaseban, ručno pokrenut korak: restart API-ja ne mijenja SQL model.
+// Render ovo pokreće prije deploy-a; običan restart API-ja ne mijenja SQL model.
 migrate().catch(() => {
   console.error("Migracija nije uspjela. Provjerite bazu i konfiguraciju.");
   process.exitCode = 1;

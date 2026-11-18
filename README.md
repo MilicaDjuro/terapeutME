@@ -6,6 +6,8 @@ Ako tek upoznajete Next.js i NestJS, počnite od [vodiča za čitanje i održava
 
 ## Pokretanje
 
+Za objavljivanje frontenda na Vercelu i API-ja/baze na Renderu pratite [vodič za deploy](docs/deployment.md). Repo sadrži `render.yaml` i `apps/web/vercel.json`; vodič navodi vrijednosti koje treba unijeti u dashboardima.
+
 Potrebni su Node.js 22.12+ i npm. Na Windowsu koristite `npm.cmd` ako PowerShell ne dozvoljava `npm.ps1`.
 
 ```powershell
@@ -49,11 +51,11 @@ Na `/demo/dashboard` promijenite demo ulogu da isprobate cijeli tok. Probne poda
 
 **Javno zakazivanje i `/dashboard` koriste stvarne naloge i PostgreSQL.** `localStorage` rezervacije ostaju samo na `/demo/dashboard` i `/demo/therapist/[id]/book`. Demo uloge ne daju serverske dozvole i njihove izmjene ne mijenjaju stvarne zahtjeve.
 
-Email potvrda koristi SMTP: lokalni Mailpit za testiranje ili konfigurisan servis za stvarnu dostavu. Stvarni raspored, seanse, zahtjevi, promjene statusa i isticanje rade na serveru. Booking emailovi, podsjetnik u 08:00 i admin upravljanje još nijesu uključeni. Demo Excel se preuzima lokalno.
+Email potvrda i booking obavještenja koriste SMTP: lokalni Mailpit za testiranje ili konfigurisan servis za stvarnu dostavu. Stvarni raspored, seanse, zahtjevi, promjene statusa i isticanje rade na serveru. Podsjetnik u 08:00 i admin upravljanje još nijesu uključeni. Demo Excel se preuzima lokalno.
 
 NestJS API izlaže health, auth, katalog, fotografije, `/schedule`, `/bookings` i javnu `/therapists/:id/slots` zauzetost. Upis i privatno čitanje provjeravaju JWT, ulogu i vlasništvo. Admin endpointi još nijesu implementirani.
 
-Google Fonts se opciono učitavaju iz CSS-a; ako mreža nije dostupna koristi se sistemski font. Demo nema analitiku.
+Inter i Plus Jakarta Sans učitavaju se iz lokalnih fajlova. Privatna analitika terapeuta koristi API i PostgreSQL; odvojeni demo nema analitiku.
 
 ## Struktura
 

@@ -192,7 +192,7 @@ Vraćanje sedmičnog rasporeda sada ima korak objašnjenja i potvrde u `DateAvai
 
 `features/account-profile-editor.tsx` ima imenovane korake otvaranja, odustajanja i čuvanja cijelog profila. Obje uloge u jednom formularu mijenjaju ime, prezime, datum rođenja, telefon, grad i adresu; terapeut tu ima i zvanje i biografiju. `POST /auth/profile` određuje vlasnika iz JWT-a i čuva podatke u jednoj transakciji. Klijentov privatni grad/adresa su u `users`, a javni podaci ordinacije u `therapists`. `setUser` i ponovno učitavanje pregleda terapeuta mijenjaju prikaz tek nakon potvrde upisa u bazu. Detaljni koraci i mjesta za breakpoint su u odjeljku „Uređivanje vlastitog profila“ u [auth.md](auth.md).
 
-`main.ts` je ulaz u API. `bootstrap` kreira aplikaciju iz `AppModule`, dodaje početak adrese `/api/v1`, podešava dozvoljeni frontend i otvara port 4000.
+`main.ts` je ulaz u API. `bootstrap` kreira aplikaciju iz `AppModule`, dodaje početak adrese `/api/v1` i podešava dozvoljeni frontend. `config.ts: apiListenAddress` koristi Render `PORT` prije lokalnog `API_PORT`; lokalno sluša na `127.0.0.1:4000`, a u produkciji na `0.0.0.0`.
 
 `app.module.ts` uključuje health/auth/directory/booking controllere, PostgreSQL servis, poslovne servise i provjeru Origin-a. `health.controller.ts` povezuje adresu sa funkcijom:
 
@@ -206,7 +206,9 @@ Zapisi koji počinju sa `@` nazivaju se dekoratori. Oni NestJS-u govore na kojoj
 
 ## Baza i konfiguracija
 
-`compose.yaml` pokreće lokalni PostgreSQL na portu 5432. `db/schema.sql` pravi tabele samo kada Docker kreira **novu** bazu. Izmjena SQL fajla ne mijenja već postojeću bazu; za to treba nova migracija.
+`compose.yaml` pokreće lokalni PostgreSQL na portu 5432. `db/schema.sql` pravi početne tabele kada Docker kreira **novu** bazu ili kada `npm.cmd run db:migrate` pronađe praznu šemu. Postojeće tabele i podaci se ne resetuju; izmjena SQL fajla ne mijenja već postojeću bazu, za to treba nova migracija.
+
+Produkcioni tok je opisan korak po korak u [deployment.md](deployment.md). `render.yaml` priprema NestJS i PostgreSQL; migracije se izvršavaju kao zaseban pre-deploy korak, bez demo uvoza. `apps/web/vercel.json` gradi frontend i zajednički paket iz monorepo korijena. `next.config.ts` provjerava `API_ORIGIN` i prosljeđuje `/api/v1` pozive Renderu. Kolačić ostaje na frontend adresi; tajne baze i emaila postoje samo na API-ju.
 
 `db/migrations/002-auth.sql` dodaje polja korisnika, privremene registracije, sesije i trajne brojače pokušaja. `npm.cmd run db:migrate` primjenjuje ovu migraciju na postojeću bazu bez reseta. Mailpit koristi portove 1025 za SMTP i 8025 za testno sanduče. Ne dostavlja poruke na stvarne email adrese.
 

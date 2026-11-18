@@ -1,5 +1,13 @@
 # Provjera početne verzije
 
+## Priprema za Vercel i Render — 18. novembar 2026.
+
+- Dodati su odvojeni frontend/API build-ovi, Vercel monorepo konfiguracija i Render Blueprint sa internom PostgreSQL vezom, pre-deploy migracijama i health provjerom. API koristi Render `PORT` i produkcioni host `0.0.0.0`; migraciona komanda prepoznaje praznu šemu i ne uvozi demo naloge. Koraci i varijable su u [deployment.md](deployment.md).
+- `npm.cmd run typecheck`, `npm.cmd run build` i `npm.cmd run format:check` prolaze nakon usklađivanja zavisnosti kroz `npm.cmd ci`. `npm.cmd test` prolazi sa **42 uspješne provjere i 9 preskočenih integracionih scenarija**. Za testove je korišćen privremeni testni `AUTH_SECRET` u okruženju, bez produkcionih tajni.
+- Nove provjere potvrđuju prednost Render porta, lokalni host, odbijanje neispravnih portova, produkcione HTTPS origine i zahtjev za stvarnim SMTP servisom. Provjereno je i da Vercel konfiguracija odbija nedostajući/neispravan `API_ORIGIN` i pravilno pravi rewrite.
+- Browser provjera sa lokalnim testnim HTTP serverom potvrđuje prenos POST tijela, `Origin` zaglavlja, query parametara i HttpOnly kolačića kroz produkcioni Next.js proxy. Ovo provjerava proxy, ne stvarnu prijavu, TLS ili SMTP dostavu na hostingu.
+- U Edge-u četiri postojeća demo browser scenarija prolaze. Dva scenarija koja učitavaju katalog ne završavaju jer lokalni API i baza nijesu dostupni (`ECONNREFUSED` na portu 4000); cleanup testnog procesa je prekinut nakon tih rezultata. Javni katalog scenario nije pokrenut. Potpuni auth browser skup i integraciona provjera novih migracija ostaju za okruženje sa PostgreSQL-om i Mailpit-om. Novi migracioni test pravi zasebnu šemu, provjerava prvi deploy i očuvanje seanse od 40 minuta pri ponovnom pokretanju.
+
 ## Primljeni zahtjevi i trenutno čekanje — 25. oktobar 2026.
 
 - Provjera zbirnih podataka razjasnila je primjer sa 6 primljenih zahtjeva u 30 dana i 0 na čekanju: tri su sada potvrđena i tri otkazana. To su različite mjere. Analitika sada odvojeno prikazuje trenutno stanje svih rezervacija (nezavisno od perioda) i istorijske radnje u periodu. Kartice su preimenovane u „Primljeni zahtjevi u periodu“ i „Potvrde termina u periodu“, sa objašnjenjima.

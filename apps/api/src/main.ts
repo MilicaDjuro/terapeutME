@@ -2,10 +2,14 @@ import "./config";
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import { allowedOrigins, validateConfiguration } from "./config";
+import {
+  allowedOrigins,
+  apiListenAddress,
+  validateConfiguration,
+} from "./config";
 import express from "express";
 
-/** Kreira API, podešava adrese i dozvoljeni frontend i otvara lokalni port. */
+/** Kreira API i dozvoljeni frontend; u produkciji sluša i zahtjeve Render proxy-ja. */
 async function bootstrap() {
   validateConfiguration();
   const app = await NestFactory.create(AppModule, { bodyParser: false });
@@ -18,7 +22,8 @@ async function bootstrap() {
     origin: allowedOrigins(),
     credentials: true,
   });
-  await app.listen(Number(process.env.API_PORT || 4000), "127.0.0.1");
+  const address = apiListenAddress();
+  await app.listen(address.port, address.host);
 }
 // Ovo je ulaz u API program. Greška pri pokretanju upisuje se u terminal.
 bootstrap().catch((error) => {

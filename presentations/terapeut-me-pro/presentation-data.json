@@ -1,0 +1,104 @@
+[
+  {
+    "number": "01",
+    "title": "Seanse i zakazivanje",
+    "subtitle": "Od slobodnog termina do razgovora, u jednom toku.",
+    "image": "01-seanse-i-kalendar.png",
+    "tools": [
+      {
+        "title": "Online sesije",
+        "description": "Razgovor na daljinu, povezan sa terminom i vašim profilom."
+      },
+      {
+        "title": "Napredni kalendar zakazivanja",
+        "description": "Jasan pregled dostupnosti, zakazivanja i narednih seansi."
+      }
+    ],
+    "note": "Koncept online seanse i rasporeda."
+  },
+  {
+    "number": "02",
+    "title": "Manje administracije",
+    "subtitle": "Podsjetnici i evidencija uz svakodnevni rad.",
+    "image": "02-podsjetnici-i-klijenti.png",
+    "tools": [
+      {
+        "title": "Automatski podsjetnici",
+        "description": "Podsjećanje na predstojeći termin, bez ručnog slanja svake poruke."
+      },
+      {
+        "title": "Privatna evidencija klijenata",
+        "description": "Organizovan pregled klijenata, kontakata i povezanih termina."
+      }
+    ],
+    "note": "Izmišljeni klijenti i termini služe samo za prikaz."
+  },
+  {
+    "number": "03",
+    "title": "Kontinuitet između seansi",
+    "subtitle": "Bilješke za vas. Materijali koje dijelite sa klijentom.",
+    "image": "03-biljeske-i-materijali.png",
+    "tools": [
+      {
+        "title": "Privatne bilješke o sesijama",
+        "description": "Mjesto za vaše bilješke uz seansu, odvojeno od sadržaja koji dijelite."
+      },
+      {
+        "title": "Radni listovi i materijali",
+        "description": "Radni listovi, vježbe i preporuke za konkretnog klijenta."
+      }
+    ],
+    "note": "Koncept razdvaja privatne bilješke od dodijeljenih materijala."
+  },
+  {
+    "number": "04",
+    "title": "Profil koji vas predstavlja",
+    "subtitle": "Više prostora da klijent upozna vaš način rada.",
+    "image": "04-profil-i-video.png",
+    "tools": [
+      {
+        "title": "PRO oznaka na profilu",
+        "description": "Prepoznatljiva oznaka korišćenja PRO alata na javnom profilu."
+      },
+      {
+        "title": "Uvodni video na profilu",
+        "description": "Kratko video predstavljanje vašeg pristupa i načina rada."
+      }
+    ],
+    "note": "PRO oznaka je odvojena od verifikacije stručnjaka."
+  },
+  {
+    "number": "05",
+    "title": "Uvidi i lični link",
+    "subtitle": "Razumijte posjete profilu i olakšajte njegovo dijeljenje.",
+    "image": "05-statistike-i-link.png",
+    "tools": [
+      {
+        "title": "Statistike profila",
+        "description": "Pregled posjeta profilu, upita i zakazivanja kroz vrijeme."
+      },
+      {
+        "title": "Lični link profila",
+        "description": "Jedna adresa profila za dijeljenje na mrežama, u emailu i potpisu."
+      }
+    ],
+    "note": "Brojevi i adresa profila su ilustrativni primjeri."
+  },
+  {
+    "number": "06",
+    "title": "Razmjena i povezivanje",
+    "subtitle": "Radionice, događaji i zajednica na jednom mjestu.",
+    "image": "06-dogadjaji-i-zajednica.png",
+    "tools": [
+      {
+        "title": "Objava radionica i događaja",
+        "description": "Prostor da predstavite radionicu ili događaj i osnovne informacije."
+      },
+      {
+        "title": "Zajednica stručnjaka/kinja",
+        "description": "Mjesto za profesionalno povezivanje, pitanja i razmjenu resursa."
+      }
+    ],
+    "note": "Radionica i učesnici su izmišljeni primjeri."
+  }
+]

@@ -10,6 +10,8 @@
     "dev": "npm run build --workspace=@terapeut/domain && npm run dev --workspace=@terapeut/web",
     "dev:api": "npm run build --workspace=@terapeut/domain && npm run dev --workspace=@terapeut/api",
     "build": "npm run build --workspace=@terapeut/domain && npm run build --workspace=@terapeut/web && npm run build --workspace=@terapeut/api",
+    "build:web": "npm run build --workspace=@terapeut/domain && npm run build --workspace=@terapeut/web",
+    "build:api": "npm run build --workspace=@terapeut/domain && npm run build --workspace=@terapeut/api",
     "typecheck": "npm run build --workspace=@terapeut/domain && npm run typecheck --workspaces --if-present",
     "test": "npm run build --workspace=@terapeut/domain && npm run test --workspace=@terapeut/domain && npm run test --workspace=@terapeut/api",
     "db:migrate": "npm run db:migrate --workspace=@terapeut/api",
@@ -17,6 +19,7 @@
     "test:e2e": "playwright test",
     "test:auth:e2e": "tsx scripts/run-auth-e2e.ts",
     "start": "npm run start --workspace=@terapeut/web",
+    "start:api": "npm run start --workspace=@terapeut/api",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

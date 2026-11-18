@@ -1,0 +1,351 @@
+/* Lokalni fontovi i boje prate postojeći dizajn aplikacije. */
+@font-face {
+  font-family: Inter;
+  src: url("brand/fonts/inter-latin.woff2") format("woff2");
+  font-weight: 400 800;
+}
+@font-face {
+  font-family: Inter;
+  src: url("brand/fonts/inter-latin-ext.woff2") format("woff2");
+  font-weight: 400 800;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+2020-206F, U+20A0-20AB,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("brand/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  font-weight: 400 800;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("brand/fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  font-weight: 400 800;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+2020-206F, U+20A0-20AB,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: #dae4df;
+  color: #172b3a;
+  font-family: Inter, sans-serif;
+}
+.slide {
+  width: 1600px;
+  height: 900px;
+  position: relative;
+  overflow: hidden;
+  background: #edf3f0;
+  page-break-after: always;
+  break-after: page;
+}
+.slide:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+header {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  top: 42px;
+  height: 46px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header img {
+  width: 230px;
+  height: auto;
+}
+.badge {
+  display: grid;
+  place-items: center;
+  width: 236px;
+  height: 43px;
+  border-radius: 24px;
+  background: #172b3a;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+footer {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  bottom: 13px;
+  height: 36px;
+  padding-top: 14px;
+  border-top: 1px solid #d5dddc;
+  display: flex;
+  justify-content: space-between;
+  color: #647682;
+  font-size: 13px;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -1.7px;
+}
+.hero {
+  position: absolute;
+  left: 64px;
+  top: 137px;
+  width: 1472px;
+  height: 665px;
+  border-radius: 32px;
+  background: #176e72;
+  color: white;
+  overflow: hidden;
+  padding: 45px 46px;
+}
+.orb {
+  position: absolute;
+  top: 18px;
+  right: 56px;
+  width: 310px;
+  height: 310px;
+  border-radius: 50%;
+  background: #2c8383;
+  opacity: 0.7;
+}
+.eyebrow {
+  position: relative;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #d8efeb;
+}
+.hero-row {
+  position: absolute;
+  left: 36px;
+  top: 108px;
+  display: flex;
+  align-items: center;
+  gap: 55px;
+}
+.pro {
+  font-family: Inter, sans-serif;
+  font-size: 222px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -14px;
+  width: 398px;
+}
+.hero h1 {
+  font-size: 76px;
+  line-height: 1.18;
+  font-weight: 700;
+  position: relative;
+  letter-spacing: -3px;
+}
+.hero-bottom {
+  position: absolute;
+  left: 46px;
+  right: 46px;
+  top: 374px;
+  padding-top: 34px;
+  border-top: 1px solid #74b0aa;
+}
+.hero-bottom h2 {
+  font-size: 39px;
+  letter-spacing: -1.3px;
+}
+.hero-bottom p {
+  margin-top: 26px;
+  font-size: 29px;
+  line-height: 1.65;
+  color: #e3f4f0;
+}
+.hero-bottom strong {
+  position: absolute;
+  right: 30px;
+  bottom: 8px;
+  text-align: right;
+  font-size: 24px;
+  line-height: 1.5;
+}
+.title {
+  position: absolute;
+  left: 64px;
+  top: 129px;
+  width: 1472px;
+  font-size: 54px;
+  line-height: 1.24;
+  font-weight: 700;
+}
+.subtitle {
+  position: absolute;
+  left: 66px;
+  top: 216px;
+  width: 1430px;
+  color: #647682;
+  font-size: 24px;
+  line-height: 1.5;
+}
+.overview-grid {
+  position: absolute;
+  left: 64px;
+  top: 299px;
+  display: grid;
+  grid-template-columns: 720px 720px;
+  gap: 23px 32px;
+}
+.overview-card {
+  height: 151px;
+  border: 1px solid #d5dddc;
+  background: white;
+  border-radius: 21px;
+  padding: 23px 22px;
+  display: flex;
+  gap: 21px;
+}
+.number {
+  flex: 0 0 55px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: #e5f1f2;
+  color: #176e72;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.overview-card div {
+  padding-top: 3px;
+}
+.overview-card h3 {
+  font-size: 23px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.overview-card p {
+  margin-top: 19px;
+  font-size: 23px;
+  line-height: 1.3;
+  color: #176e72;
+}
+.feature-cards {
+  position: absolute;
+  left: 64px;
+  top: 294px;
+  display: grid;
+  gap: 20px;
+  width: 444px;
+}
+.tool-card {
+  height: 240px;
+  background: white;
+  border: 1px solid #d5dddc;
+  border-radius: 21px;
+  padding: 23px;
+}
+.tool-card span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #176e72;
+}
+.tool-card h2 {
+  margin-top: 16px;
+  font-size: 27px;
+  line-height: 1.23;
+  letter-spacing: -0.8px;
+  min-height: 67px;
+}
+.tool-card p {
+  margin-top: 8px;
+  font-size: 19px;
+  line-height: 1.45;
+  color: #647682;
+}
+.mockup {
+  position: absolute;
+  left: 545px;
+  top: 290px;
+  width: 991px;
+  height: 558px;
+  object-fit: contain;
+  border-radius: 18px;
+}
+.closing h1 {
+  position: absolute;
+  left: 70px;
+  top: 205px;
+  font-size: 73px;
+  line-height: 1.2;
+  letter-spacing: -3px;
+}
+.closing-copy {
+  position: absolute;
+  left: 74px;
+  top: 484px;
+  color: #647682;
+  font-size: 29px;
+  line-height: 1.65;
+}
+.concept-note {
+  position: absolute;
+  left: 74px;
+  top: 727px;
+  width: 730px;
+  color: #647682;
+  font-size: 18px;
+  line-height: 1.5;
+}
+.closing-panel {
+  position: absolute;
+  left: 880px;
+  top: 173px;
+  width: 656px;
+  height: 608px;
+  border-radius: 32px;
+  background: #176e72;
+  color: white;
+  padding: 39px 49px;
+}
+.closing-panel div {
+  font-size: 140px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -8px;
+}
+.closing-panel h2 {
+  margin-top: 30px;
+  font-size: 48px;
+  line-height: 1.3;
+  letter-spacing: -1.6px;
+}
+.closing-panel p {
+  position: absolute;
+  left: 49px;
+  bottom: 52px;
+  color: #d7eeea;
+  font-size: 25px;
+}
+@page {
+  size: 1600px 900px;
+  margin: 0;
+}
+@media print {
+  html,
+  body {
+    background: #edf3f0;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -36,21 +36,21 @@ Isti SMTP sada šalje i obavještenja o zahtjevima i odgovorima na termine. Njih
 4. U lokalnom `.env` promijenite:
 
    ```dotenv
-   AUTH_EMAIL_MODE=smtp
-   SMTP_HOST=smtp.resend.com
-   SMTP_PORT=465
-   SMTP_SECURE=true
-   SMTP_USER=resend
-   SMTP_PASS=ovdje-upisite-svoj-API-kljuc
-   SMTP_FROM=Terapeut.me <noreply@terapeut.me>
+   AUTH_EMAIL_MODE=resend
+   RESEND_API_KEY=ovdje-upisite-svoj-API-kljuc
+   RESEND_FROM=Terapeut.me <noreply@vas-verifikovani-domen.me>
    ```
 
-   Adresa `SMTP_FROM` mora pripadati domenu koji ste verifikovali. Ako je verifikovan poddomen, prilagodite adresu. API ključ upisujte samo u `.env` ili serverski secret manager, nikad u chat, frontend kod ili `NEXT_PUBLIC_...` varijable.
+   Adresa `RESEND_FROM` mora pripadati domenu koji ste verifikovali. Ako je verifikovan poddomen, prilagodite adresu. Ključ pripada samo `.env` fajlu ili Render Environment podešavanjima, nikad browseru. SMTP varijable nijesu potrebne za Resend HTTPS režim.
 
-5. Zaustavite i ponovo pokrenite API. Restart učitava izmijenjenu SMTP konfiguraciju.
+5. Zaustavite i ponovo pokrenite API. Restart učitava izmijenjenu email konfiguraciju.
 6. Registrujte testni nalog sa emailom koji kontrolišete i provjerite dostavu i unos koda. SMTP prihvatanje poruke nije dokaz da poruka nije završila u spam folderu.
 
-Podešavanja prate [Resend SMTP uputstvo](https://resend.com/docs/send-with-smtp). Nije potrebno uvoditi Prisma ORM da bi ovaj API radio; Prisma Studio može i dalje direktno pregledati istu bazu.
+Podešavanja prate [Resend HTTPS API](https://resend.com/docs/api-reference/emails/send-email). `EmailService` koristi ugrađeni `fetch`, rok od 15 sekundi i potvrđuje odgovor sa ID-em poruke. Odgovor provajdera se ne loguje jer može sadržati privatne podatke. Isti servis dostavlja registracione kodove, reset linkove i booking obavještenja. Režimi `local` i `smtp` ostaju podržani za Mailpit i okruženja koja dozvoljavaju SMTP.
+
+## Privremeno isključen email na Render Free
+
+`AUTH_EMAIL_MODE=disabled` dozvoljava pokretanje API-ja bez SMTP/Resend tajni. Registracija, ponovno slanje koda i zahtjev za obnovu lozinke vraćaju 503 sa porukom da email još nije uključen, prije čuvanja privremenih podataka. Isto važi za poznate i nepoznate email adrese. Potvrda emaila se ne zaobilazi; postojeće prijave ostaju provjerene u bazi. Outbox se i dalje upisuje uz poslovnu transakciju, ali se ne obrađuje dok se dostava ne uključi. Koraci za Free hosting su u [deployment.md](deployment.md).
 
 ## Tok podataka
 
@@ -176,7 +176,7 @@ Browser auth provjere koriste poseban API, zasebnu testnu šemu i lokalni Mailpi
 
 ## Prije javnog puštanja
 
-Koristite HTTPS i produkcioni secret manager, stvarni SMTP režim i tačne `WEB_ORIGINS` adrese. Postojeći lokalni DB korisnik/lozinka i javni razvojni portovi nijesu podešavanje javne produkcije. `NODE_ENV=production` odbija lokalni email režim i frontend adrese bez HTTPS-a.
+Koristite HTTPS, serverske tajne, Resend HTTPS ili dozvoljeni SMTP servis i tačne `WEB_ORIGINS` adrese. Postojeći lokalni DB korisnik/lozinka i javni razvojni portovi nijesu podešavanje javne produkcije. `NODE_ENV=production` odbija lokalni email režim i frontend adrese bez HTTPS-a. Privremeni `disabled` režim služi pripremi hostinga prije uključivanja emaila i ne omogućava novu registraciju.
 
 IP ograničenje trenutno koristi adresu stvarne socket veze. Iza Next.js proxy-ja to je zajednička adresa proxy-ja, pa je limit konzervativan i dijeljen. Javni deployment treba dodatno ograničenje na pouzdanom reverse proxy-ju; ne prihvatajte proizvoljna `X-Forwarded-For` zaglavlja kao dokaz identiteta.
 

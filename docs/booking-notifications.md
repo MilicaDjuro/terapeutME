@@ -1,5 +1,7 @@
 # Email obavještenja o terminima
 
+Na Render Free koristi se `AUTH_EMAIL_MODE=resend` i Resend HTTPS API; lokalni razvoj zadržava Mailpit/SMTP. U privremenom `disabled` režimu red se upisuje uz rezervaciju, ali worker ne šalje poruke niti mijenja pokušaje ili `sent_at`. Kada se dostava uključi, ponovo provjerava aktuelno stanje i primaoca. Resend koristi `Idempotency-Key: booking/<outbox-id>` za retry u okviru provajderovog roka od 24 sata; outbox ostaje trajni izvor stanja. Detalji su u [auth.md](auth.md) i [deployment.md](deployment.md).
+
 Zahtjevi, termini i istorija ostaju u aplikaciji i PostgreSQL-u. Email je dodatno obavještenje sa linkom ka istom zahtjevu, bez automatske prijave ili promjene statusa klikom na email.
 
 ## Ko prima poruku
@@ -70,7 +72,7 @@ Nije potrebno ručno pokretanje retry-ja: interval sam ponavlja neuspješno slan
 
 Primijenite `npm.cmd run db:migrate` i pokrenite API. Health provjerava i migraciju 009 i vraća `bookingNotifications: outbox`. Već pokrenuti razvojni API sa `tsx watch` učitava kod automatski; produkcioni API treba ponovo pokrenuti nakon migracije i build-a.
 
-Trenutni lokalni režim šalje u [Mailpit](http://127.0.0.1:8025), a ne na Gmail ili drugu stvarnu adresu. Uputstvo za konfigurisan SMTP i provjeren domen nalazi se u [auth.md](auth.md). Isti `SMTP_*` parametri služe za registraciju, obnovu lozinke i booking obavještenja. Ne upisujte pristupne podatke u frontend ili Git.
+Trenutni lokalni režim šalje u [Mailpit](http://127.0.0.1:8025), a ne na Gmail ili drugu stvarnu adresu. Uputstvo za Resend HTTPS i verifikovan domen je u [auth.md](auth.md). Isti `RESEND_API_KEY` i `RESEND_FROM` služe za registraciju, obnovu lozinke i booking obavještenja; SMTP režimi i dalje koriste `SMTP_*` vrijednosti. Ne upisujte pristupne podatke u frontend ili Git.
 
 `sent_at` znači da je SMTP prihvatio poruku, ne da je pročitana ili završila u glavnom sandučetu. Ako se proces prekine poslije SMTP prihvatanja, a prije upisa `sent_at`, moguć je ponovni pokušaj već primljene poruke. Stabilan `Message-ID` i jedinstven ključ smanjuju duplikate; obični SMTP ne daje atomsku potvrdu sa PostgreSQL-om. Ako se status promijeni dok je poruka već u slanju, email opisuje raniju promjenu, a aplikacija ostaje izvor najnovijeg stanja.
 

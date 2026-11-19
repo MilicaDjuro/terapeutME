@@ -105,7 +105,9 @@ export class BookingNotificationService
 
   /** Jedna instanca ne pokreće dvije serije istovremeno; javna metoda olakšava izolovane testove. */
   processPending(): Promise<void> {
-    if (this.stopping) return Promise.resolve();
+    // Red ostaje netaknut dok korisnik ne uključi dostavu; nema lažnog sent_at ni trošenja retry pokušaja.
+    if (this.stopping || this.email.mode === "disabled")
+      return Promise.resolve();
     if (this.currentBatch) return this.currentBatch;
     this.currentBatch = this.deliverBatch().finally(() => {
       this.currentBatch = null;
@@ -230,6 +232,7 @@ export class BookingNotificationService
   /** Prevodi samo poznate SMTP kodove u dijagnostiku; sirova greška može sadržati privatne podatke. */
   private emailFailureCode(failure: unknown): string {
     if (failure && typeof failure === "object" && "code" in failure) {
+      if (failure.code === "RESEND_SEND_FAILED") return "RESEND_SEND_FAILED";
       if (failure.code === "EAUTH") return "SMTP_AUTH_FAILED";
       if (
         ["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EDNS"].includes(

@@ -6,8 +6,16 @@ import { Pool } from "pg";
 /** Priprema praznu bazu ili nadograđuje postojeću; ne briše podatke i ne uvozi demo naloge. */
 async function migrate() {
   if (!process.env.DATABASE_URL) throw new Error("Nedostaje DATABASE_URL.");
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  // Jedna konekcija drži session lock do zatvaranja pool-a, pa paralelni restart ne pokreće istu migraciju dvaput.
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 1,
+    connectionTimeoutMillis: 10000,
+  });
   try {
+    await pool.query(
+      "SELECT pg_advisory_lock(hashtextextended(current_schema()||':schema-migrations',0))",
+    );
     // Samo prazna šema dobija početne tabele. Postojeću bazu mijenjaju isključivo dodatne migracije.
     const tables = await pool.query(
       "SELECT tablename FROM pg_tables WHERE schemaname=current_schema()",
@@ -60,7 +68,7 @@ async function migrate() {
     await pool.end();
   }
 }
-// Render ovo pokreće prije deploy-a; običan restart API-ja ne mijenja SQL model.
+// Render Free ovo pokreće prije API-ja pri svakom startu; evidentirane migracije se preskaču.
 migrate().catch(() => {
   console.error("Migracija nije uspjela. Provjerite bazu i konfiguraciju.");
   process.exitCode = 1;

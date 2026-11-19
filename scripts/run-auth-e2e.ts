@@ -135,6 +135,8 @@ async function runAuthBrowserTests() {
         "test",
         "--config",
         "playwright.auth.config.ts",
+        // npm prosljeđuje izbor fajlova ili --grep da pokrećemo samo provjere izmijenjenog toka.
+        ...process.argv.slice(2),
       ],
       {
         stdio: "inherit",

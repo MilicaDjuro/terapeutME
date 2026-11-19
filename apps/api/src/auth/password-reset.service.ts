@@ -37,6 +37,8 @@ export class PasswordResetService {
 
   /** Ne otkriva postoji li email; novi zahtjev poništava prethodni link istog korisnika. */
   async requestReset(emailAddress: string, origin: string) {
+    // Isključena dostava daje isti odgovor svim adresama, prije upita o postojanju naloga.
+    this.email.assertDeliveryEnabled();
     if (!allowedOrigins().includes(origin))
       throw new BadRequestException("Adresa aplikacije nije dozvoljena.");
     await this.auth.limitAttempts(`password-reset:${emailAddress}`, 3, 3600);

@@ -51,7 +51,7 @@ Na `/demo/dashboard` promijenite demo ulogu da isprobate cijeli tok. Probne poda
 
 **Javno zakazivanje i `/dashboard` koriste stvarne naloge i PostgreSQL.** `localStorage` rezervacije ostaju samo na `/demo/dashboard` i `/demo/therapist/[id]/book`. Demo uloge ne daju serverske dozvole i njihove izmjene ne mijenjaju stvarne zahtjeve.
 
-Email potvrda i booking obavještenja koriste SMTP: lokalni Mailpit za testiranje ili konfigurisan servis za stvarnu dostavu. Stvarni raspored, seanse, zahtjevi, promjene statusa i isticanje rade na serveru. Podsjetnik u 08:00 i admin upravljanje još nijesu uključeni. Demo Excel se preuzima lokalno.
+Email potvrda i booking obavještenja koriste lokalni Mailpit/SMTP ili Resend HTTPS API. Za Render Free pripremljen je `start:render` sa migracijama prije starta i privremeni `AUTH_EMAIL_MODE=disabled` dok Resend ne bude podešen; tada registracija/reset ne mogu poslati kodove. Za testnu PostgreSQL bazu koristi se Neon Free uz [uputstvo za povezivanje](docs/neon.md). Stvarni raspored, seanse, zahtjevi, promjene statusa i isticanje rade na serveru. Podsjetnik u 08:00 i admin upravljanje još nijesu uključeni. Demo Excel se preuzima lokalno.
 
 NestJS API izlaže health, auth, katalog, fotografije, `/schedule`, `/bookings` i javnu `/therapists/:id/slots` zauzetost. Upis i privatno čitanje provjeravaju JWT, ulogu i vlasništvo. Admin endpointi još nijesu implementirani.
 
@@ -85,6 +85,8 @@ npm.cmd test
 npm.cmd run build
 npm.cmd run test:e2e
 npm.cmd run test:auth:e2e
+# Samo registracija, obnova lozinke i booking emailovi:
+npm.cmd run test:auth:e2e -- auth.spec.ts password-reset.spec.ts booking-email.spec.ts
 npm.cmd run format:check
 ```
 

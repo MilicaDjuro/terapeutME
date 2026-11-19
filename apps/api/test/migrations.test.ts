@@ -35,7 +35,11 @@ test(
         windowsHide: true,
         timeout: 30000,
       };
-      await executeFile(process.execPath, migrationArguments, migrationOptions);
+      // Dva konkurentna starta moraju sačekati isti serverski lock, uključujući inicijalnu šemu.
+      await Promise.all([
+        executeFile(process.execPath, migrationArguments, migrationOptions),
+        executeFile(process.execPath, migrationArguments, migrationOptions),
+      ]);
       const migrations = await isolated.query(
         "SELECT name FROM schema_migrations",
       );

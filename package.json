@@ -20,6 +20,7 @@
     "test:auth:e2e": "tsx scripts/run-auth-e2e.ts",
     "start": "npm run start --workspace=@terapeut/web",
     "start:api": "npm run start --workspace=@terapeut/api",
+    "start:render": "node apps/api/dist/migrate.js && npm run start:api",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

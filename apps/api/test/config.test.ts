@@ -85,8 +85,42 @@ test("produkcija dozvoljava samo navedene HTTPS domene i stvarni email servis", 
     "https://www.terapeut.example.invalid",
   ]);
   process.env.AUTH_EMAIL_MODE = "local";
-  assert.throws(validateConfiguration, /SMTP/);
+  assert.throws(validateConfiguration, /AUTH_EMAIL_MODE/);
   process.env.AUTH_EMAIL_MODE = "smtp";
   delete process.env.SMTP_PASS;
   assert.throws(validateConfiguration, /SMTP/);
+});
+
+test("Render Free se pokreće sa izričito isključenim emailom, bez SMTP i Resend tajni", () => {
+  process.env.AUTH_EMAIL_MODE = "disabled";
+  for (const name of [
+    "SMTP_HOST",
+    "SMTP_FROM",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "RESEND_API_KEY",
+    "RESEND_FROM",
+  ]) {
+    delete process.env[name];
+  }
+  validateConfiguration();
+  process.env.AUTH_EMAIL_MODE = "resend";
+  assert.throws(validateConfiguration, /RESEND/);
+});
+
+test("Resend HTTPS zahtijeva samo vlastiti ključ i pošiljaoca", () => {
+  process.env.AUTH_EMAIL_MODE = "resend";
+  process.env.RESEND_API_KEY = "re_configuration_test_only";
+  process.env.RESEND_FROM = "Terapeut.me <noreply@example.invalid>";
+  delete process.env.SMTP_HOST;
+  delete process.env.SMTP_FROM;
+  delete process.env.SMTP_PORT;
+  delete process.env.SMTP_USER;
+  delete process.env.SMTP_PASS;
+  validateConfiguration();
+  delete process.env.RESEND_FROM;
+  assert.throws(validateConfiguration, /RESEND_FROM/);
+  process.env.AUTH_EMAIL_MODE = "resned";
+  assert.throws(validateConfiguration, /AUTH_EMAIL_MODE/);
 });

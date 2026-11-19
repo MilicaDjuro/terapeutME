@@ -167,6 +167,8 @@ test(
     const delivered = new Map<string, string>();
     const email = {
       mode: "local",
+      /** Testni email servis je uključen, ali ne šalje spoljne poruke. */
+      assertDeliveryEnabled() {},
       /** Hvata poruke samo u testu; ne šalje ih stvarnim primaocima. */
       async sendRegistrationCode(recipient: string, code: string) {
         if (recipient.startsWith("smtp-failure"))

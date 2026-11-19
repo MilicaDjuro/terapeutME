@@ -1,5 +1,14 @@
 # Provjera početne verzije
 
+## Render Free, privremeno isključen email i Resend HTTPS
+
+- `render.yaml` koristi Free API/bazu bez pre-deploy komande. `start:render` prvo izvršava migracije, pa otvara API. Migrator drži PostgreSQL session lock na jednoj konekciji, pa dva konkurentna starta ne ponavljaju SQL korake. Postojeći podaci i demo granice ostaju sačuvani.
+- `AUTH_EMAIL_MODE=disabled` pokreće API bez email tajni, ali registracija, ponovno slanje i zahtjev za reset vraćaju 503 prije kreiranja privremenih podataka. Outbox ostaje netaknut. Resend koristi HTTPS sa rokom od 15 sekundi, provjerom potvrde poruke i stabilnim ključem outbox-a; ne loguje privatni odgovor provajdera. Lokalni Mailpit i SMTP su sačuvani.
+- Prolaze `npm.cmd run typecheck`, `npm.cmd run build` i `npm.cmd run format:check`. Svih **112 domenskih/API provjera** prolazi bez preskakanja: 26 domenskih i 86 API, uključujući stvarne PostgreSQL transakcije, prvi/paralelni migracioni start i očuvanje seanse od 40 minuta pri restartu.
+- Resend testovi koriste lažni HTTP odgovor bez spoljnog slanja: registracija, reset i booking payload, stabilan idempotency ključ, 401/429/500, neispravan JSON/ID, mrežna greška i timeout. Poseban test provjerava da disabled ne šalje poruke, ne čuva registraciju/reset i ne obrađuje outbox.
+- Stvarni prvi produkcioni start je dodatno provjeren u izolovanoj lokalnoj šemi: prazna baza dobija sve migracije, API bez SMTP/Resend tajni vraća health sa `emailDelivery: disabled`, a registracija/reset vraćaju 503 bez novih naloga, challenge-a ili reset zapisa.
+- U Edge-u prolaze **5/5 relevantnih browser scenarija**: klijentska registracija i prijava, mobilna/engleska prijava, registracija terapeuta, booking emailovi u oba naloga i obnova lozinke za obje uloge. Koriste stvarni lokalni Mailpit i izolovanu šemu, bez spoljnog emaila. Runner sada prosljeđuje izbor fajlova i `--grep` Playwright-u. Stvarna Resend dostava ostaje za naknadno podešavanje ključa i domena.
+
 ## Priprema za Vercel i Render — 18. novembar 2026.
 
 - Dodati su odvojeni frontend/API build-ovi, Vercel monorepo konfiguracija i Render Blueprint sa internom PostgreSQL vezom, pre-deploy migracijama i health provjerom. API koristi Render `PORT` i produkcioni host `0.0.0.0`; migraciona komanda prepoznaje praznu šemu i ne uvozi demo naloge. Koraci i varijable su u [deployment.md](deployment.md).

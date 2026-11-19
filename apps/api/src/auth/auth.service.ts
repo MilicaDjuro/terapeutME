@@ -135,6 +135,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
     input: RegistrationInput,
     therapistProfile?: TherapistRegistrationDetails,
   ) {
+    this.email.assertDeliveryEnabled();
     await this.limitAttempts(`register:${input.email}`, 5, 3600);
     const passwordHash = await hashPassword(input.password);
     const id = randomUUID();
@@ -240,6 +241,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
 
   /** Izdaje novi kod za isti zahtjev; prethodni kod prestaje da važi, broj grešaka ostaje. */
   async resendCode(id: string) {
+    this.email.assertDeliveryEnabled();
     await this.limitAttempts(`resend:${id}`, 5, 3600);
     let code = randomInt(0, 10000).toString().padStart(4, "0");
     const client = await this.database.pool.connect();

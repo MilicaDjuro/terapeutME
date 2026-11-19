@@ -6,6 +6,7 @@ import {
   ServiceUnavailableException,
 } from "@nestjs/common";
 import { DatabaseService } from "./database.service";
+import { configuredEmailMode } from "./config";
 
 // Zajednički početak /api/v1 dodaje main.ts. Ovdje dodajemo /health.
 @Controller("health")
@@ -36,6 +37,7 @@ export class HealthController {
       application: "terapeut-me",
       version: "0.1.0",
       database: "connected",
+      emailDelivery: configuredEmailMode(),
       authentication: "enabled",
       bookingApi: "enabled",
       bookingNotifications: "outbox",

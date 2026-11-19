@@ -36,10 +36,12 @@ export interface TherapistAccountProfile {
   }[];
 }
 
+export type EmailDelivery = "smtp" | "local" | "resend" | "disabled";
+
 export interface AuthResponse {
   user?: AccountUser;
   challengeId?: string;
-  delivery?: "smtp" | "local";
+  delivery?: EmailDelivery;
   resendAfterSeconds?: number;
   therapistProfile?: TherapistAccountProfile;
 }

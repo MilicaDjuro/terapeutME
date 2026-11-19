@@ -88,6 +88,8 @@ test(
     let sendGate: (() => Promise<void>) | null = null;
     const email = {
       mode: "local",
+      /** Testni email servis je uključen, ali ne šalje spoljne poruke. */
+      assertDeliveryEnabled() {},
       /** Hvata samo testne poruke; greška i čekanje oponašaju stvarni SMTP servis. */
       async sendBookingNotification(
         recipient: string,

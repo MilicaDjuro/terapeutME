@@ -4,6 +4,24 @@ import { resolve } from "node:path";
 // Lokalno čitamo ignorisani root .env; Render vrijednosti iz okruženja imaju prednost.
 config({ path: resolve(__dirname, "../../../.env"), quiet: true });
 
+export type EmailMode = "local" | "smtp" | "resend" | "disabled";
+
+/** Bira izričito podešen način dostave; nepoznata vrijednost nikad ne uključuje lokalni email u produkciji. */
+export function configuredEmailMode(): EmailMode {
+  const mode = process.env.AUTH_EMAIL_MODE || "local";
+  if (
+    mode === "local" ||
+    mode === "smtp" ||
+    mode === "resend" ||
+    mode === "disabled"
+  ) {
+    return mode;
+  }
+  throw new Error(
+    "AUTH_EMAIL_MODE mora biti local, smtp, resend ili disabled.",
+  );
+}
+
 /** Provjerava obaveznu serversku konfiguraciju; ne ispisuje tajne. */
 export function validateConfiguration() {
   if (!process.env.DATABASE_URL) {
@@ -12,24 +30,37 @@ export function validateConfiguration() {
   if (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32) {
     throw new Error("AUTH_SECRET mora sadržati najmanje 32 nasumična znaka.");
   }
-  if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
-    throw new Error("Nedostaju SMTP_HOST ili SMTP_FROM u .env konfiguraciji.");
+  const emailMode = configuredEmailMode();
+  if (emailMode === "local" || emailMode === "smtp") {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
+      throw new Error(
+        "Nedostaju SMTP_HOST ili SMTP_FROM u .env konfiguraciji.",
+      );
+    }
+    if (
+      !Number.isInteger(Number(process.env.SMTP_PORT)) ||
+      Number(process.env.SMTP_PORT) < 1 ||
+      Number(process.env.SMTP_PORT) > 65535
+    ) {
+      throw new Error("SMTP_PORT mora biti važeći broj porta.");
+    }
+    if (
+      emailMode === "smtp" &&
+      (!process.env.SMTP_USER || !process.env.SMTP_PASS)
+    ) {
+      throw new Error("SMTP dostava zahtijeva SMTP_USER i SMTP_PASS.");
+    }
   }
   if (
-    !Number.isInteger(Number(process.env.SMTP_PORT)) ||
-    Number(process.env.SMTP_PORT) < 1 ||
-    Number(process.env.SMTP_PORT) > 65535
+    emailMode === "resend" &&
+    (!process.env.RESEND_API_KEY?.trim() || !process.env.RESEND_FROM?.trim())
   ) {
-    throw new Error("SMTP_PORT mora biti važeći broj porta.");
+    throw new Error("Resend zahtijeva RESEND_API_KEY i RESEND_FROM.");
   }
   if (process.env.NODE_ENV === "production") {
-    if (
-      process.env.AUTH_EMAIL_MODE !== "smtp" ||
-      !process.env.SMTP_USER ||
-      !process.env.SMTP_PASS
-    ) {
+    if (emailMode === "local") {
       throw new Error(
-        "Produkcija zahtijeva stvarni SMTP servis i njegove pristupne podatke.",
+        "Produkcija zahtijeva AUTH_EMAIL_MODE=resend, smtp ili izričito disabled; lokalni Mailpit nije dostupan.",
       );
     }
     if (!process.env.WEB_ORIGINS?.trim()) {

@@ -132,6 +132,8 @@ test(
     let deliveryFails = false;
     const email = {
       mode: "local",
+      /** Testni email servis je uključen, ali ne šalje spoljne poruke. */
+      assertDeliveryEnabled() {},
       /** Hvata link samo za test; stvarni SMTP i stvarni primaoci se ne koriste. */
       async sendPasswordResetLink(recipient: string, link: string) {
         if (deliveryFails) throw new Error("SMTP unavailable");

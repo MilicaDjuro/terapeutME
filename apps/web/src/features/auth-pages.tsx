@@ -8,6 +8,7 @@ import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
 import { useDemo } from "@/lib/demo-context";
 import { useAuth } from "@/lib/auth-context";
 import { accountHome, authErrorMessage, requestAuth } from "@/lib/auth-client";
+import type { EmailDelivery } from "@/lib/auth-client";
 import { TherapistRegistrationFields } from "./therapist-registration-fields";
 import { useDirectory } from "@/lib/directory-context";
 import { ActionButton } from "@/components/ui";
@@ -19,7 +20,7 @@ function savePendingRegistration(
   storageKey: string,
   challengeId: string,
   email: string,
-  delivery: "smtp" | "local",
+  delivery: EmailDelivery,
   resendAt: number,
 ) {
   try {
@@ -220,7 +221,7 @@ export function RegistrationPage({
   // Pamtimo koje dugme šalje zahtjev; ostala su samo privremeno onemogućena.
   const [pendingAction, setPendingAction] = useState("");
   const [email, setEmail] = useState("");
-  const [delivery, setDelivery] = useState<"smtp" | "local">("smtp");
+  const [delivery, setDelivery] = useState<EmailDelivery>("smtp");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -249,7 +250,8 @@ export function RegistrationPage({
         return;
       setChallengeId(saved.challengeId);
       setEmail(saved.email);
-      setDelivery(saved.delivery === "local" ? "local" : "smtp");
+      if (saved.delivery === "resend") setDelivery("resend");
+      else setDelivery(saved.delivery === "local" ? "local" : "smtp");
       setResendSeconds(
         Math.max(0, Math.ceil((saved.resendAt - Date.now()) / 1000)),
       );

@@ -46,6 +46,8 @@ test(
     const codes = new Map<string, string>();
     const email = {
       mode: "local",
+      /** Testni email servis je uključen, ali ne šalje spoljne poruke. */
+      assertDeliveryEnabled() {},
       /** Hvata kod u testu; ne šalje poruku stvarnom primaocu. */
       async sendRegistrationCode(recipient: string, code: string) {
         codes.set(recipient, code);

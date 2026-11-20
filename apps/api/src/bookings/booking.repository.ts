@@ -28,7 +28,7 @@ export class BookingRepository {
       SELECT b.id,COALESCE(t.public_id,t.id::text) AS "therapistId",t.id AS "internalTherapistId",t.full_name AS "therapistName",
         COALESCE(s.public_id,s.id::text) AS "serviceId",b.client_user_id AS "clientUserId",
         b.service_name_snapshot AS "serviceName",b.service_name_snapshot AS "serviceNameEn",
-        b.duration_minutes AS duration,b.price_eur_snapshot::float8 AS price,
+        b.duration_minutes AS duration,b.price_eur_snapshot::float8 AS price,b.online,
         to_char(b.start_at AT TIME ZONE 'Europe/Podgorica','YYYY-MM-DD') AS date,
         (extract(hour FROM b.start_at AT TIME ZONE 'Europe/Podgorica')*60+extract(minute FROM b.start_at AT TIME ZONE 'Europe/Podgorica'))::int AS start,
         (extract(hour FROM b.start_at AT TIME ZONE 'Europe/Podgorica')*60+extract(minute FROM b.start_at AT TIME ZONE 'Europe/Podgorica'))::int+b.duration_minutes AS "end",

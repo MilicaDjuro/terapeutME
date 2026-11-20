@@ -120,7 +120,12 @@ export function TherapistProfile({ id }: { id: string }) {
                       <span>
                         <Clock3 size={13} />
                         {candidateService.duration} min ·{" "}
-                        {translate("Uživo", "In person")}
+                        {candidateService.online
+                          ? translate(
+                              "Online · video poziv",
+                              "Online · video call",
+                            )
+                          : translate("Uživo", "In person")}
                       </span>
                     </div>
                     <strong className="service-price">

@@ -215,10 +215,18 @@ export function validateTherapistRegistration(value: unknown): {
     profile: {
       ...profile,
       serviceName: requireText(body.serviceName, "Naziv usluge", 120),
+      online: requireOnlineChoice(body.online),
       durationMinutes,
       priceEur: requireSessionPrice(body.priceEur),
     },
   };
+}
+
+/** Prihvata samo izričit izbor načina rada; stare registracije podrazumijevaju uživo. */
+export function requireOnlineChoice(value: unknown): boolean {
+  if (value === undefined || value === "false") return false;
+  if (value === "true") return true;
+  throw new BadRequestException("Izaberite online seansu ili seansu uživo.");
 }
 
 /** Provjerava nasumičnu oznaku registracije prije pristupa bazi. */

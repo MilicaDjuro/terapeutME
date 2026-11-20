@@ -128,6 +128,15 @@ export function TherapistRegistrationFields() {
             "If you leave the price blank, it is shown as “On request”.",
           )}
         </p>
+        <label className="checkbox-label">
+          <input type="checkbox" name="online" />
+          <span>
+            {translate(
+              "Online seansa — video poziv za dvije osobe",
+              "Online session — video call for two people",
+            )}
+          </span>
+        </label>
       </fieldset>
     </>
   );

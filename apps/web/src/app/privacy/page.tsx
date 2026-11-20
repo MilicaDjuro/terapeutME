@@ -22,6 +22,13 @@ export default function Privacy() {
           "Demo requests and changes are saved in browser storage. Registration stores your first name, last name, email, date of birth and password hash in the server database after email verification. Therapist registration also stores your professional title, biography, city, phone, optional address and first service. Sign-in uses a session cookie. Codes are sent through the configured email service; local testing retains messages in a test inbox. Demo bookings do not share data with real therapists.",
         )}
       </p>
+      <h2>{translate("Online seanse", "Online sessions")}</h2>
+      <p>
+        {translate(
+          "Ako je usluga označena kao online, poziv je dostupan samo terapeutu i klijentu iz potvrđene rezervacije u predviđenom vremenu. Lokalni pregled kamere ne šalje sliku drugim osobama. Kada je Daily servis uključen i pridružite se pozivu, Daily obrađuje zvuk, video i tehničke podatke veze. Aplikacija ne snima razgovor i ne pravi transkript. U bazi ostaju tehnička oznaka sobe i vremena njenog kreiranja, isteka i zatvaranja; pristupni tokeni se ne čuvaju. Ovo nije završena politika produkcione usluge.",
+          "For services marked online, only the booked therapist and client can join a confirmed session within its access window. The local camera preview does not send your image to anyone. When Daily is enabled and you join, Daily processes audio, video and connection metadata. The app does not record or transcribe calls. The database retains the technical room identifier and creation, expiry and closure times; access tokens are not stored. This is not the final production privacy policy.",
+        )}
+      </p>
       <h2>{translate("Ko vidi podatke?", "Who can see the data?")}</h2>
       <p>
         {translate(

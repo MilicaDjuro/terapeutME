@@ -33,6 +33,7 @@ export interface TherapistAccountProfile {
     name: string;
     durationMinutes: number;
     priceEur: number | null;
+    online: boolean;
   }[];
 }
 

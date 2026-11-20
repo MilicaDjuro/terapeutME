@@ -22,6 +22,7 @@ export function WaitlistForm({
   serviceId,
   duration,
   price,
+  online,
   date,
   selectedStart,
 }: {
@@ -29,6 +30,7 @@ export function WaitlistForm({
   serviceId: string;
   duration: number;
   price: number | null;
+  online: boolean;
   date: string;
   selectedStart: number | null;
 }) {
@@ -75,6 +77,7 @@ export function WaitlistForm({
           serviceId,
           duration: String(duration),
           price: String(price),
+          online: String(online),
           mode,
           firstDate,
           lastDate:
@@ -156,7 +159,10 @@ export function WaitlistForm({
           </p>
           <p>
             {duration} min · <Price value={price} /> ·{" "}
-            {translate("Vrijeme u Crnoj Gori", "Montenegro time")}
+            {online
+              ? translate("Online", "Online")
+              : translate("Uživo", "In person")}{" "}
+            · {translate("Vrijeme u Crnoj Gori", "Montenegro time")}
           </p>
           <fieldset disabled={saving} className="waitlist-fields">
             <label className="field">
@@ -259,8 +265,8 @@ export function WaitlistForm({
               <input type="checkbox" name="consent" required />
               <span>
                 {translate(
-                  "Saglasan/na sam da mi se prvi odgovarajući termin automatski dodijeli i potvrdi, uz prikazano trajanje i cijenu. Terapeut dobija moje kontakt podatke.",
-                  "I agree to automatic assignment and confirmation of the first matching time at the displayed duration and price. The therapist receives my contact details.",
+                  "Saglasan/na sam da mi se prvi odgovarajući termin automatski dodijeli i potvrdi, uz prikazani način rada, trajanje i cijenu. Terapeut dobija moje kontakt podatke.",
+                  "I agree to automatic assignment and confirmation of the first matching time at the displayed modality, duration and price. The therapist receives my contact details.",
                 )}
               </span>
             </label>
@@ -386,7 +392,10 @@ function WaitlistCard({
       <h3>{therapistView ? entry.clientName : entry.therapistName}</h3>
       <p>
         {entry.serviceName} · {entry.duration} min ·{" "}
-        <Price value={entry.price} />
+        {entry.online
+          ? translate("Online", "Online")
+          : translate("Uživo", "In person")}{" "}
+        · <Price value={entry.price} />
       </p>
       <p>
         {formatDate(entry.firstDate, locale, true)}

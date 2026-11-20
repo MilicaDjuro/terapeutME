@@ -92,7 +92,15 @@ export function ClientBookingSummary({ booking }: { booking: ServerBooking }) {
           </dd>
         </div>
       </dl>
-      {therapist && (
+      {booking.online && (
+        <p className="client-practice-address">
+          {translate(
+            "Online · video poziv u aplikaciji",
+            "Online · video call in the app",
+          )}
+        </p>
+      )}
+      {therapist && !booking.online && (
         <p className="client-practice-address">
           <MapPin size={16} aria-hidden="true" />
           <span>

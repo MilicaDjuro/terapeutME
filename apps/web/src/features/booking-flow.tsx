@@ -94,6 +94,7 @@ export function BookingFlow({ id }: { id: string }) {
         therapistId: id,
         serviceId: service.id,
         duration: String(service.duration),
+        online: String(service.online === true),
         date,
         start: String(start),
         phone: String(form.get("phone") || ""),
@@ -132,6 +133,11 @@ export function BookingFlow({ id }: { id: string }) {
           </p>
           <div className="success-details">
             <strong>{therapist.name}</strong>
+            <span>
+              {success.online
+                ? translate("Online · video poziv", "Online · video call")
+                : translate("Uživo", "In person")}
+            </span>
             <span>{success.date}</span>
             <strong>
               {timeLabel(success.start)}–{timeLabel(success.end)}
@@ -181,7 +187,14 @@ export function BookingFlow({ id }: { id: string }) {
                     <strong>
                       {service.name} · {service.duration} min
                     </strong>
-                    <span>{translate("Uživo", "In person")}</span>
+                    <span>
+                      {service.online
+                        ? translate(
+                            "Online · video poziv",
+                            "Online · video call",
+                          )
+                        : translate("Uživo", "In person")}
+                    </span>
                   </div>
                   <strong>
                     <Price value={service.price} />
@@ -211,6 +224,7 @@ export function BookingFlow({ id }: { id: string }) {
               serviceId={service.id}
               duration={service.duration}
               price={service.price}
+              online={service.online === true}
               date={date}
               selectedStart={waitlistStart}
             />

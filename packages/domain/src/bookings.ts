@@ -79,6 +79,7 @@ export function requestBooking(
     serviceId: service.id,
     serviceName: service.name,
     serviceNameEn: service.nameEn,
+    online: service.online === true,
     duration: service.duration,
     price: service.price,
     date: input.date,

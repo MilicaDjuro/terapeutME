@@ -548,6 +548,24 @@ function ServerBookingCard({
           {error}
         </p>
       )}
+      {booking.online && (
+        <div className="online-booking-access">
+          <p className="muted small">
+            {translate(
+              "Online seansa · pristup iz potvrđenog termina, 10 minuta prije početka.",
+              "Online session · join from a confirmed booking, 10 minutes before the start.",
+            )}
+          </p>
+          {booking.status === "CONFIRMED" && (
+            <Link
+              className="button button-primary button-sm"
+              href={`/session/${encodeURIComponent(booking.id)}`}
+            >
+              {translate("Otvori online seansu", "Open online session")}
+            </Link>
+          )}
+        </div>
+      )}
       <div className="booking-actions">
         {therapistView && booking.status === "REQUESTED" && (
           <>

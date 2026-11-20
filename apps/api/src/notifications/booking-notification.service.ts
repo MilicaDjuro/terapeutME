@@ -78,7 +78,7 @@ export class BookingNotificationService
            'date',to_char(b.start_at AT TIME ZONE 'Europe/Podgorica','YYYY-MM-DD'),
            'start',(extract(hour FROM b.start_at AT TIME ZONE 'Europe/Podgorica')*60+extract(minute FROM b.start_at AT TIME ZONE 'Europe/Podgorica'))::int,
            'end',(extract(hour FROM b.start_at AT TIME ZONE 'Europe/Podgorica')*60+extract(minute FROM b.start_at AT TIME ZONE 'Europe/Podgorica'))::int+b.duration_minutes,
-           'duration',b.duration_minutes,'price',b.price_eur_snapshot,'city',t.city,'address',COALESCE(t.address,''),
+           'online',b.online,'duration',b.duration_minutes,'price',b.price_eur_snapshot,'city',t.city,'address',COALESCE(t.address,''),
            'previousDate',$4::text,'previousStart',$5::int,'recipientRole',$3::text),now(),b.state_version
        FROM booking_requests b JOIN therapists t ON t.id=b.therapist_id
        WHERE b.id=$1 AND CASE WHEN $3='THERAPIST' THEN t.linked_user_id ELSE b.client_user_id END IS NOT NULL

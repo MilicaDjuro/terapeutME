@@ -25,6 +25,7 @@ export function configuredEmailMode(): EmailMode {
 
 /** Provjerava obaveznu serversku konfiguraciju; ne ispisuje tajne. */
 export function validateConfiguration() {
+  configuredVideoProvider();
   if (!process.env.DATABASE_URL) {
     throw new Error("Nedostaje DATABASE_URL u .env konfiguraciji.");
   }
@@ -106,6 +107,22 @@ export function validateConfiguration() {
     }
   }
   apiListenAddress();
+}
+
+/** Video je isključen dok server nema izričit izbor, Daily ključ i naziv domena naloga. */
+export function configuredVideoProvider(): "disabled" | "daily" {
+  const provider = process.env.ONLINE_SESSIONS_PROVIDER || "disabled";
+  if (provider === "disabled") return provider;
+  if (provider !== "daily")
+    throw new Error("ONLINE_SESSIONS_PROVIDER mora biti disabled ili daily.");
+  if (
+    !process.env.DAILY_API_KEY?.trim() ||
+    !/^[a-z0-9][a-z0-9-]{0,62}$/.test(process.env.DAILY_DOMAIN || "")
+  )
+    throw new Error(
+      "Daily zahtijeva serverski DAILY_API_KEY i DAILY_DOMAIN, npr. terapeut-me bez .daily.co.",
+    );
+  return provider;
 }
 
 /** Render zadaje PORT; lokalno zadržava API_PORT i pristup samo sa ovog računara. */

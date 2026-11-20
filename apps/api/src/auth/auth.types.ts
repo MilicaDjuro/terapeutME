@@ -26,12 +26,14 @@ export interface TherapistProfileInput {
 }
 
 export interface TherapistRegistrationDetails extends TherapistProfileInput {
+  online?: boolean;
   serviceName: string;
   durationMinutes: number;
   priceEur: number | null;
 }
 
 export interface TherapistDetailsRow {
+  online: boolean;
   title: string;
   biography: string;
   city: string;
@@ -58,6 +60,7 @@ export interface TherapistAccountProfile {
     name: string;
     durationMinutes: number;
     priceEur: number | null;
+    online: boolean;
   }[];
 }
 

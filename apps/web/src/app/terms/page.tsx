@@ -25,8 +25,8 @@ export default function Terms() {
       <h2>{translate("Plaćanje i kontakt", "Payment and contact")}</h2>
       <p>
         {translate(
-          "Nema online plaćanja ni online seansi. Budući korisnici dogovaraće detalje direktno sa terapeutom. U demo verziji nije omogućen kontakt sa stvarnim terapeutima.",
-          "There are no online payments or online sessions. Future users will arrange details directly with their therapist. The demo does not provide contact with real therapists.",
+          "Online plaćanje nije uključeno. Za uslugu označenu kao online, nakon potvrde rezervacije učesnici mogu otvoriti video seansu kada je video servis podešen. Poziv je za terapeuta i jednog klijenta, bez snimanja i transkripcije u aplikaciji. U razvojnom testiranju koriste se probni nalozi i podaci.",
+          "Online payments are not enabled. For a service marked online, participants can open a video session after confirmation when the video service is configured. Calls support a therapist and one client, without recording or transcription in the app. Development testing uses test accounts and data.",
         )}
       </p>
       <h2>{translate("Prije stvarnog lansiranja", "Before a live launch")}</h2>

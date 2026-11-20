@@ -29,6 +29,9 @@ import {
 import { MaterialsService } from "./materials/materials.service";
 import { AnalyticsController } from "./analytics/analytics.controller";
 import { AnalyticsService } from "./analytics/analytics.service";
+import { DailyService } from "./online-sessions/daily.service";
+import { OnlineSessionsService } from "./online-sessions/online-sessions.service";
+import { OnlineSessionsController } from "./online-sessions/online-sessions.controller";
 
 // Auth, raspored i rezervacije koriste bazu i zajednička poslovna pravila.
 @Module({
@@ -43,6 +46,7 @@ import { AnalyticsService } from "./analytics/analytics.service";
     WaitlistController,
     MaterialsController,
     AnalyticsController,
+    OnlineSessionsController,
   ],
   providers: [
     DatabaseService,
@@ -61,6 +65,8 @@ import { AnalyticsService } from "./analytics/analytics.service";
     MaterialsService,
     MaterialsSessionGuard,
     AnalyticsService,
+    DailyService,
+    OnlineSessionsService,
   ],
 })
 export class AppModule {}

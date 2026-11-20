@@ -84,6 +84,7 @@ test(
       "db/migrations/012-client-materials.sql",
       "db/migrations/013-profile-analytics.sql",
       "db/migrations/014-profile-view-events.sql",
+      "db/migrations/015-online-sessions.sql",
     ])
       await database.pool.query(
         await readFile(resolve(__dirname, "../../..", file), "utf8"),
@@ -139,6 +140,7 @@ test(
     async function anchor(
       data: Awaited<ReturnType<typeof fixture>>,
       date = addDays(dateKey(), 2),
+      online = false,
     ) {
       const result = await bookings.create(data.patient, {
         therapistId: data.therapist,
@@ -146,6 +148,7 @@ test(
         date,
         start: "540",
         phone: "+38267123456",
+        online: String(online),
       });
       return (
         await bookings.respond(data.owner, result.booking.id, {
@@ -153,6 +156,29 @@ test(
         })
       ).booking;
     }
+
+    await context.test(
+      "recurring online bookings preserve the agreed modality after an offer changes",
+      async () => {
+        const data = await fixture();
+        await database.pool.query(
+          "UPDATE services SET online=true WHERE id=$1",
+          [data.service],
+        );
+        const initial = await anchor(data, addDays(dateKey(), 2), true);
+        await database.pool.query(
+          "UPDATE services SET online=false WHERE id=$1",
+          [data.service],
+        );
+        await recurring.create(data.owner, {
+          bookingId: initial.id,
+          intervalDays: "7",
+        });
+        const sessions = (await bookings.list(data.patient)).bookings;
+        assert.ok(sessions.length > 2);
+        for (const session of sessions) assert.equal(session.online, true);
+      },
+    );
 
     await context.test(
       "weekly and fortnightly series are atomic, private and idempotent under concurrent creation",

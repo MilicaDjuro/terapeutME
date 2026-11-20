@@ -24,7 +24,11 @@ import {
 import { DatabaseService } from "../database.service";
 import { AuthService } from "../auth/auth.service";
 import type { AccountUser } from "../auth/auth.types";
-import { requireBody, requireText } from "../auth/auth.validation";
+import {
+  requireBody,
+  requireText,
+  requireOnlineChoice,
+} from "../auth/auth.validation";
 import { DirectoryService } from "../directory/directory.service";
 import { BookingRepository } from "./booking.repository";
 import { BookingNotificationService } from "../notifications/booking-notification.service";
@@ -35,6 +39,7 @@ import {
 } from "./booking.validation";
 
 interface WaitingEntry {
+  online: boolean;
   id: string;
   client_user_id: string;
   service_id: string;
@@ -224,10 +229,11 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
       if (
         requireInteger(body.duration, "Trajanje", 5, 240) !==
           service.duration ||
-        String(body.price) !== String(service.price)
+        String(body.price) !== String(service.price) ||
+        requireOnlineChoice(body.online) !== (service.online === true)
       )
         throw new BadRequestException(
-          "Seansa je izmijenjena. Osvježite stranicu i provjerite trajanje i cijenu.",
+          "Seansa je izmijenjena. Osvježite stranicu i provjerite način rada, trajanje i cijenu.",
         );
       const exact = body.mode === "exact";
       if (
@@ -262,8 +268,8 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
         [therapistId, service.id],
       );
       const entry = await client.query<{ id: string }>(
-        `INSERT INTO booking_waitlist(therapist_id,client_user_id,service_id,service_name,duration_minutes,price_eur,phone,first_date,last_date,weekdays,start_minute,end_minute,exact_time,request_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+        `INSERT INTO booking_waitlist(therapist_id,client_user_id,service_id,service_name,duration_minutes,price_eur,phone,first_date,last_date,weekdays,start_minute,end_minute,exact_time,request_id,online)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
          ON CONFLICT (client_user_id,therapist_id,service_id,first_date,last_date,weekdays,start_minute,end_minute,exact_time) WHERE status='WAITING'
          DO UPDATE SET phone=booking_waitlist.phone RETURNING id`,
         [
@@ -281,6 +287,7 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
           range.end,
           exact,
           requestId,
+          service.online === true,
         ],
       );
       // Stariji redovi se obrađuju prije novog. Ako već postoji odgovarajuće slobodno vrijeme, dodjela je odmah potvrđena.
@@ -346,7 +353,7 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
     const result = await connection.query(
       `SELECT w.id,w.status,w.exact_time AS exact,w.weekdays,w.start_minute AS start,w.end_minute AS "end",
        to_char(w.first_date,'YYYY-MM-DD') AS "firstDate",to_char(w.last_date,'YYYY-MM-DD') AS "lastDate",
-       w.duration_minutes AS duration,w.price_eur::float8 AS price,w.service_name AS "serviceName",
+       w.duration_minutes AS duration,w.price_eur::float8 AS price,w.service_name AS "serviceName",w.online,
        w.assigned_booking_id AS "bookingId",w.created_at AS "createdAt",t.full_name AS "therapistName",u.full_name AS "clientName"
        FROM booking_waitlist w JOIN therapists t ON t.id=w.therapist_id LEFT JOIN users u ON u.id=w.client_user_id
        WHERE ($2='CLIENT' AND w.client_user_id=$1) OR ($2='THERAPIST' AND t.linked_user_id=$1)
@@ -396,7 +403,8 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
         !entry.available_account ||
         !service ||
         service.duration !== entry.duration_minutes ||
-        service.price !== entry.price
+        service.price !== entry.price ||
+        (service.online === true) !== entry.online
       ) {
         await client.query(
           "UPDATE booking_waitlist SET status='UNAVAILABLE',finished_at=now() WHERE id=$1",
@@ -474,8 +482,8 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
             ],
           };
           await client.query(
-            `INSERT INTO booking_requests(id,client_user_id,therapist_id,service_id,service_name_snapshot,duration_minutes,price_eur_snapshot,client_name_snapshot,client_email_snapshot,client_phone_snapshot,start_at,end_at,status,confirmed_at)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,($11::date+$12*interval '1 minute') AT TIME ZONE 'Europe/Podgorica',($11::date+$13*interval '1 minute') AT TIME ZONE 'Europe/Podgorica','CONFIRMED',now())`,
+            `INSERT INTO booking_requests(id,client_user_id,therapist_id,service_id,service_name_snapshot,duration_minutes,price_eur_snapshot,client_name_snapshot,client_email_snapshot,client_phone_snapshot,start_at,end_at,status,confirmed_at,online)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,($11::date+$12*interval '1 minute') AT TIME ZONE 'Europe/Podgorica',($11::date+$13*interval '1 minute') AT TIME ZONE 'Europe/Podgorica','CONFIRMED',now(),$14)`,
             [
               booking.id,
               entry.client_user_id,
@@ -490,6 +498,7 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
               date,
               start,
               booking.end,
+              booking.online === true,
             ],
           );
           await this.repository.recordEvent(client, booking, null);

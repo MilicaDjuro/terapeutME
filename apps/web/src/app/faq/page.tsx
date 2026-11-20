@@ -43,8 +43,8 @@ export default function FAQ() {
     [
       translate("Da li su seanse online?", "Are sessions online?"),
       translate(
-        "Ne. Ova verzija podržava samo susrete uživo. Lokaciju, cijenu i detalje dogovarate direktno sa terapeutom.",
-        "No. This version supports only in-person sessions. Arrange location, price and details directly with your therapist.",
+        "Da, za usluge označene kao online kada je video servis uključen. Nakon potvrde termina otvorite online seansu iz svojih rezervacija. Ulazak se otvara 10 minuta prije početka, a poziv je za terapeuta i jednog klijenta.",
+        "Yes, for services marked online when the video service is enabled. After confirmation, open the online session from your bookings. Access opens 10 minutes before the appointment, for a therapist and one client.",
       ),
     ],
     [

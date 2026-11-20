@@ -16,6 +16,8 @@ Ovaj vodič je za osobu koja zna osnove JavaScripta, ali tek upoznaje Next.js, N
 
 ## Kako Next.js pronađe stranicu
 
+Online seanse su na `/session/[bookingId]`: [online-sessions.md](online-sessions.md) prati uslugu, kopiju načina rada u rezervaciji, provjere učesnika i Daily podešavanje. Prikaz je u `features/online-session.tsx`, browser SDK u `lib/video-connection.ts`, a REST provider u `apps/api/src/online-sessions/daily.service.ts`. Migracija 015 zadržava postojeće termine uživo. Tokeni se ne upisuju u bazu/browser skladište, a izlazak gasi lokalne medije. Bez Daily naloga server ostaje u režimu `disabled`; lokalni pregled nije stvarni video razgovor.
+
 Privatna analitika terapeuta je na `/dashboard/analytics`: `features/profile-analytics.tsx` odvojeno prikazuje trenutno stanje svih rezervacija i istorijske radnje u periodu, `features/analytics-visitors.tsx` različite/ponovljene posjete i tabele, a API `analytics/analytics.service.ts` računa podatke iz baze. „Primljeni zahtjevi u periodu“ uključuju i već obrađene; „Na čekanju sada“ pokazuje samo aktivno čekanje. Migracija 014 dodaje svaki pregled, uključujući anonimne browsere i ponavljanja. Definicije i debugging su u [profile-analytics.md](profile-analytics.md).
 
 Next.js koristi nazive foldera unutar `apps/web/src/app`. Fajl `page.tsx` predstavlja jednu stranicu. Fajl `layout.tsx` je omotač oko stranica: dodaje zajednički HTML i komponente.

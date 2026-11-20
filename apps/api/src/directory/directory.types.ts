@@ -26,6 +26,7 @@ export interface PublicTherapist {
     duration: number;
     price: number | null;
     active: boolean;
+    online: boolean;
   }[];
   availability: { id: string; weekday: number; start: number; end: number }[];
   dateAvailability: {

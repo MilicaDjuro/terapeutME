@@ -1,12 +1,14 @@
 # Terapeut.me — dogovor za početnu verziju
 
-Posljednja izmjena: 25. oktobar 2026.
+Posljednja izmjena: 20. novembar 2026.
 
 19. novembar 2026: korisnik bira pripremu Amazon SES email dostave i planira Cloudflare R2 za fajlove. SES koristi HTTPS na Render Free; slanje ostaje isključeno dok ne budu spremni AWS nalog, DNS/identitet, ograničeni IAM ključ i povratno sanduče. DNS domena je trenutno povezan sa Base44, pa se dodaju samo novi provjereni zapisi bez promjene web adrese. R2 migracija fajlova je zaseban naredni posao.
 
 ## Obim
 
-Katalog, javni profili, usluge, dostupnost, izbor termina, zahtjevi i osnovna administracija. Nema klinika, online plaćanja, pretplata ni online susreta. Javni neverifikovani profili su dozvoljeni. Verifikaciju dodjeljuje isključivo admin.
+Katalog, javni profili, usluge, dostupnost, izbor termina, zahtjevi, privatne online seanse i osnovna administracija. Nema klinika, online plaćanja ni pretplata. Javni neverifikovani profili su dozvoljeni. Verifikaciju dodjeljuje isključivo admin.
+
+20. novembar 2026: korisnik bira Daily i naš ekran za online seanse, uz moguć kasniji prelazak na AWS. Terapeut označava **uslugu** kao online pri kreiranju/uređivanju ili registraciji. Rezervacija zadržava tada dogovoreni način rada; stare seanse ostaju uživo. Poziv je za terapeuta i jednog klijenta iz potvrđene rezervacije, od 10 minuta prije početka do 10 minuta nakon završetka. Snimanje i transkripcija nijesu uključeni. Stalni termini kopiraju dogovor, a lista čekanja zahtijeva novu saglasnost pri promjeni načina rada. Daily nalog još nije kreiran: stvarni pozivi ostaju isključeni do serverske konfiguracije i provjere na dva uređaja. Tehnički tok i koraci naloga su u [online-sessions.md](online-sessions.md).
 
 ## Kalendar
 

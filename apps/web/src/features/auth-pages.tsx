@@ -296,6 +296,7 @@ export function RegistrationPage({
         password: String(values.get("password")),
       };
       if (therapist) {
+        registrationValues.online = String(values.get("online") === "on");
         // Šaljemo samo polja profila; THERAPIST ulogu određuje poseban serverski endpoint.
         for (const name of [
           "title",

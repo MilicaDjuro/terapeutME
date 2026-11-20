@@ -30,6 +30,7 @@ export function SessionEditor({
       name: String(values.get("name") || ""),
       duration: String(values.get("duration") || ""),
       price: String(values.get("price") || ""),
+      online: String(values.get("online") === "on"),
     };
     if (service) body.serviceId = service.id;
     // Spinner traje koliko i stvarni API zahtjev, uključujući neuspješan odgovor.
@@ -108,6 +109,25 @@ export function SessionEditor({
           />
         </label>
       </div>
+      <label className="checkbox-label">
+        <input
+          type="checkbox"
+          name="online"
+          defaultChecked={service?.online === true}
+        />
+        <span>
+          {translate(
+            "Online seansa — video poziv",
+            "Online session — video call",
+          )}
+        </span>
+      </label>
+      <p className="muted small">
+        {translate(
+          "Online poziv je za terapeuta i jednog klijenta. Pristup se otvara iz potvrđene rezervacije. Promjena ovog izbora važi samo za nove rezervacije.",
+          "Online calls are for a therapist and one client. Join from a confirmed booking. Changing this option applies to new bookings only.",
+        )}
+      </p>
       <p className="muted small">
         {translate(
           "Naziv određuje tip seanse, npr. individualna ili partnerska. Trajanje možete promijeniti na 30, 40, 50, 60 ili drugi broj od 5 do 240 minuta. Prazna cijena znači „Na upit“.",

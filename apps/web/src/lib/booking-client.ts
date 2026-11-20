@@ -22,6 +22,7 @@ export interface BookingResponse {
 }
 
 export interface WaitlistEntry {
+  online: boolean;
   id: string;
   status: "WAITING" | "ASSIGNED" | "CANCELLED" | "EXPIRED" | "UNAVAILABLE";
   exact: boolean;

@@ -36,6 +36,8 @@ export interface Service {
   duration: number;
   price: number | null;
   active: boolean;
+  // Izostavljena vrijednost u starom demo formatu znači seansu uživo.
+  online?: boolean;
 }
 // Sedmični raspored: weekday 0 = nedjelja, 1 = ponedjeljak, ... 6 = subota.
 export interface AvailabilityWindow {
@@ -104,6 +106,8 @@ export interface Booking {
   serviceId: string;
   serviceName: string;
   serviceNameEn: string;
+  // Kopija načina rada pri rezervaciji; izmjena usluge je ne prepravlja.
+  online?: boolean;
   duration: number;
   price: number | null;
   date: string;

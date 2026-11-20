@@ -44,6 +44,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  // Seansa ima vlastito zaglavlje i kontrole: javna navigacija ne prekriva video pri skrolovanju.
+  if (path.startsWith("/session/"))
+    return <main id="main-content">{children}</main>;
   const links = [
     {
       href: "/psychotherapy",

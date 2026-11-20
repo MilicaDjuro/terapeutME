@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: "%s | Terapeut.me",
   },
   description:
-    "Pronađite stručnjaka za mentalno zdravlje u Crnoj Gori. Izaberite uslugu i zatražite termin za susret uživo.",
+    "Pronađite stručnjaka za mentalno zdravlje u Crnoj Gori. Izaberite uslugu i zatražite termin uživo ili online.",
   icons: { icon: "/brand/symbol.png", apple: "/brand/symbol.png" },
 };
 /** Omotač svih Next.js stranica: dodaje HTML, zajedničke podatke, zaglavlje i footer. */

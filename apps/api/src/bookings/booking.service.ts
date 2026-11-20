@@ -27,6 +27,7 @@ import { AuthService } from "../auth/auth.service";
 import type { AccountUser } from "../auth/auth.types";
 import {
   requireBody,
+  requireOnlineChoice,
   requireSessionPrice,
   requireText,
 } from "../auth/auth.validation";
@@ -168,24 +169,33 @@ export class BookingService implements OnModuleInit, OnModuleDestroy {
         );
         const price = requireSessionPrice(body.price);
         const name = requireText(body.name, "Naziv seanse", 120);
+        if (
+          body.online !== undefined &&
+          body.online !== "true" &&
+          body.online !== "false"
+        )
+          throw new BadRequestException(
+            "Izaberite online seansu ili seansu uživo.",
+          );
         if (body.serviceId) {
           // Mijenjamo tačno jednu vlastitu uslugu; trajanje i cijena istorijskih zahtjeva ostaju sačuvani.
           const updated = await client.query(
-            "UPDATE services SET name_mne=$3,name_en=$3,duration_minutes=$4,price_eur=$5 WHERE therapist_id=$1 AND (id::text=$2 OR public_id=$2) AND is_active RETURNING id",
+            "UPDATE services SET name_mne=$3,name_en=$3,duration_minutes=$4,price_eur=$5,online=COALESCE($6,online) WHERE therapist_id=$1 AND (id::text=$2 OR public_id=$2) AND is_active RETURNING id",
             [
               therapistId,
               requireText(body.serviceId, "Seansa", 100),
               name,
               duration,
               price,
+              body.online === undefined ? null : body.online === "true",
             ],
           );
           if (!updated.rowCount)
             throw new NotFoundException("Seansa nije pronađena.");
         } else {
           await client.query(
-            "INSERT INTO services (therapist_id,name_mne,name_en,duration_minutes,price_eur) VALUES ($1,$2,$3,$4,$5)",
-            [therapistId, name, name, duration, price],
+            "INSERT INTO services (therapist_id,name_mne,name_en,duration_minutes,price_eur,online) VALUES ($1,$2,$3,$4,$5,$6)",
+            [therapistId, name, name, duration, price, body.online === "true"],
           );
         }
       } else if (body.action === "remove-service") {
@@ -394,6 +404,10 @@ export class BookingService implements OnModuleInit, OnModuleDestroy {
       );
       if (!service)
         throw new BadRequestException("Izaberite aktivnu vrstu seanse.");
+      if (requireOnlineChoice(body.online) !== (service.online === true))
+        throw new ConflictException(
+          "Način rada seanse je promijenjen. Osvježite ponudu i ponovo izaberite seansu.",
+        );
       // Ako je terapeut promijenio trajanje dok je formular otvoren, klijent ponovo bira ažuriranu seansu.
       if (
         body.duration !== undefined &&
@@ -429,8 +443,8 @@ export class BookingService implements OnModuleInit, OnModuleDestroy {
         [therapistId, serviceId],
       );
       await client.query(
-        `INSERT INTO booking_requests (id,client_user_id,therapist_id,service_id,service_name_snapshot,duration_minutes,price_eur_snapshot,client_name_snapshot,client_email_snapshot,client_phone_snapshot,start_at,end_at)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,($11::date+$12*interval '1 minute') AT TIME ZONE 'Europe/Podgorica',($11::date+$13*interval '1 minute') AT TIME ZONE 'Europe/Podgorica')`,
+        `INSERT INTO booking_requests (id,client_user_id,therapist_id,service_id,service_name_snapshot,duration_minutes,price_eur_snapshot,client_name_snapshot,client_email_snapshot,client_phone_snapshot,start_at,end_at,online)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,($11::date+$12*interval '1 minute') AT TIME ZONE 'Europe/Podgorica',($11::date+$13*interval '1 minute') AT TIME ZONE 'Europe/Podgorica',$14)`,
         [
           booking.id,
           user.id,
@@ -445,6 +459,7 @@ export class BookingService implements OnModuleInit, OnModuleDestroy {
           date,
           start,
           booking.end,
+          booking.online === true,
         ],
       );
       await this.repository.recordEvent(client, booking, user.id);

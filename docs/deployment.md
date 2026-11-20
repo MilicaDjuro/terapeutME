@@ -83,7 +83,9 @@ Lokalni `AUTH_EMAIL_MODE=local` i Mailpit ostaju za razvoj i browser testove. Re
 
 `npm run start:render` izvršava `node apps/api/dist/migrate.js && npm run start:api`. Migraciona greška zaustavlja start; API ne kreće sa neispravnom šemom. Običan lokalni `start:api` ne pokreće migracije.
 
-`migrate.ts` drži jednu PostgreSQL konekciju i session advisory lock za trenutnu šemu, tako da konkurentni startovi sačekaju isti lock. Po zatvaranju konekcije lock se oslobađa i poslije greške. Samo praznoj šemi dodaje `db/schema.sql`, zatim izvršava neevidentirane migracije 002–014. Evidentirane migracije preskače pri narednom restartu. Podaci i istorija se ne brišu.
+`migrate.ts` drži jednu PostgreSQL konekciju i session advisory lock za trenutnu šemu, tako da konkurentni startovi sačekaju isti lock. Po zatvaranju konekcije lock se oslobađa i poslije greške. Samo praznoj šemi dodaje `db/schema.sql`, zatim izvršava neevidentirane migracije 002–015. Evidentirane migracije preskače pri narednom restartu. Podaci i istorija se ne brišu.
+
+Za Daily pozive pogledajte [online-sessions.md](online-sessions.md). Bez naloga zadržite `ONLINE_SESSIONS_PROVIDER=disabled`. Nakon kreiranja naloga na Renderu se podešavaju `ONLINE_SESSIONS_PROVIDER=daily`, `DAILY_DOMAIN` i tajni `DAILY_API_KEY`; Vercelu ključ nije potreban. Migracija 015 dodaje način rada i privatne tehničke oznake soba, bez prepravljanja postojećih termina. Aktivan poziv ima vlastiti istek i kada Render Free zaspi; prekid otkazanog poziva preko radnika zavisi od dostupnosti API-ja i Daily-ja.
 
 Deploy **ne pokreće `db:seed`**: ta komanda uvozi izmišljene profile i razvojne naloge. Prazan katalog je očekivan dok se terapeuti ne registruju poslije uključivanja emaila.
 

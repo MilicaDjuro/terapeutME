@@ -74,7 +74,7 @@ export default function Home() {
               </span>
               <span>
                 <Check size={14} />
-                {translate("Susreti uživo", "In-person sessions")}
+                {translate("Uživo ili online", "In person or online")}
               </span>
               <span>
                 <Check size={14} />

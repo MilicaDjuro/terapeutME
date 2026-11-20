@@ -11,6 +11,7 @@ export type BookingEmailTemplate =
   | "waitlist-assigned";
 
 export interface BookingEmailDetails {
+  online?: boolean;
   therapistName: string;
   clientName: string;
   serviceName: string;
@@ -96,6 +97,9 @@ export function buildBookingEmail(
   ) {
     previous = `\nPrethodni termin: ${details.previousDate} u ${timeLabel(details.previousStart)}.\nNovi predlog je naveden ispod.\n`;
   }
-  const text = `${introduction}\n${previous}\nTerapeut: ${details.therapistName}\nKlijent: ${details.clientName}\nVrsta seanse: ${details.serviceName}\nDatum: ${date}\nVrijeme: ${timeLabel(details.start)}–${timeLabel(details.end)} (Europe/Podgorica)\nTrajanje: ${details.duration} min\nCijena: ${price}\nOrdinacija: ${[details.city, details.address].filter(Boolean).join(", ")}\n\n${instruction}\n\nOtvorite zahtjev u aplikaciji:\n${link}\n\nNajnovije stanje i istorija zahtjeva dostupni su u aplikaciji. Za promjenu termina koristite aplikaciju.`;
+  const location = details.online
+    ? "Način rada: Online video seansa. Ulazak iz potvrđene rezervacije u aplikaciji, 10 minuta prije termina."
+    : `Ordinacija: ${[details.city, details.address].filter(Boolean).join(", ")}`;
+  const text = `${introduction}\n${previous}\nTerapeut: ${details.therapistName}\nKlijent: ${details.clientName}\nVrsta seanse: ${details.serviceName}\nDatum: ${date}\nVrijeme: ${timeLabel(details.start)}–${timeLabel(details.end)} (Europe/Podgorica)\nTrajanje: ${details.duration} min\nCijena: ${price}\n${location}\n\n${instruction}\n\nOtvorite zahtjev u aplikaciji:\n${link}\n\nNajnovije stanje i istorija zahtjeva dostupni su u aplikaciji. Za promjenu termina koristite aplikaciju.`;
   return { subject, text };
 }

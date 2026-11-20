@@ -363,6 +363,7 @@ export class RecurringBookingService implements OnModuleInit, OnModuleDestroy {
         price: anchor.price,
         name: anchor.serviceName,
         nameEn: anchor.serviceNameEn,
+        online: anchor.online === true,
       },
     ];
     const person = account.rows[0];
@@ -405,9 +406,9 @@ export class RecurringBookingService implements OnModuleInit, OnModuleDestroy {
     };
     await client.query(
       `INSERT INTO booking_requests(id,client_user_id,therapist_id,service_id,service_name_snapshot,duration_minutes,price_eur_snapshot,
-       client_name_snapshot,client_email_snapshot,client_phone_snapshot,start_at,end_at,status,confirmed_at,series_id,occurrence_date)
+       client_name_snapshot,client_email_snapshot,client_phone_snapshot,start_at,end_at,status,confirmed_at,series_id,occurrence_date,online)
        SELECT $1,$2,$3,b.service_id,$4,$5,$6,$7,$8,$9,($10::date+$11*interval '1 minute') AT TIME ZONE 'Europe/Podgorica',
-       ($10::date+$12*interval '1 minute') AT TIME ZONE 'Europe/Podgorica','CONFIRMED',now(),$13,$14 FROM booking_requests b WHERE b.id=$15`,
+       ($10::date+$12*interval '1 minute') AT TIME ZONE 'Europe/Podgorica','CONFIRMED',now(),$13,$14,b.online FROM booking_requests b WHERE b.id=$15`,
       [
         booking.id,
         rule.client_user_id,

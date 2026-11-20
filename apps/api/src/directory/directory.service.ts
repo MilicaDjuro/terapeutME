@@ -31,6 +31,7 @@ interface DirectoryRow {
     duration_minutes: number;
     price_eur: number | null;
     is_active: boolean;
+    online: boolean;
   }[];
   availability: {
     id: string;
@@ -106,6 +107,7 @@ export class DirectoryService {
           duration: service.duration_minutes,
           price: service.price_eur === null ? null : Number(service.price_eur),
           active: service.is_active,
+          online: service.online,
         })),
         availability: row.availability.map((window) => ({
           id: window.id,

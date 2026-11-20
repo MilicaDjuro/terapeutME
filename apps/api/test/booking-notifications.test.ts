@@ -41,6 +41,13 @@ test("booking email text includes snapshots, local date, previous time and a saf
     "http://localhost:3000/account#booking-test",
   );
   assert.match(message.subject, /predložen/);
+  const onlineMessage = buildBookingEmail(
+    "booking-confirmed",
+    { ...details, online: true },
+    "https://example.test/account",
+  );
+  assert.match(onlineMessage.text, /Online video seansa/);
+  assert.doesNotMatch(onlineMessage.text, /Ordinacija:|Ulica 1/);
   for (const text of [
     "Ana Marković",
     "Mila Test",
@@ -140,6 +147,7 @@ test(
       "db/migrations/012-client-materials.sql",
       "db/migrations/013-profile-analytics.sql",
       "db/migrations/014-profile-view-events.sql",
+      "db/migrations/015-online-sessions.sql",
     ])
       await database.pool.query(
         await readFile(resolve(__dirname, "../../..", filename), "utf8"),

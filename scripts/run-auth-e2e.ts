@@ -110,6 +110,9 @@ async function runAuthBrowserTests() {
         "utf8",
       ),
     );
+    await isolated.query(
+      await readFile(resolve("db/migrations/015-online-sessions.sql"), "utf8"),
+    );
     apiProcess = spawn(process.execPath, [resolve("apps/api/dist/main.js")], {
       stdio: "inherit",
       windowsHide: true,
@@ -120,6 +123,8 @@ async function runAuthBrowserTests() {
         API_PORT: "4100",
         WEB_ORIGINS: "http://127.0.0.1:3200",
         AUTH_EMAIL_MODE: "local",
+        // Browser provjere nikad ne koriste stvarni Daily nalog ili troše njegove minute.
+        ONLINE_SESSIONS_PROVIDER: "disabled",
         SMTP_HOST: "127.0.0.1",
         SMTP_PORT: "1025",
         SMTP_SECURE: "false",

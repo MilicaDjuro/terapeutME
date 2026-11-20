@@ -273,6 +273,12 @@ test(
         "utf8",
       ),
     );
+    await database.pool.query(
+      await readFile(
+        resolve(rootDirectory, "db/migrations/015-online-sessions.sql"),
+        "utf8",
+      ),
+    );
     // Potvrda kreira jedan nalog, serijalizuje paralelne pokušaje i izdaje opozivu sesiju.
     await context.test(
       "account appears only after verification; concurrent verification creates one account",
@@ -460,6 +466,7 @@ test(
           serviceName: "Individualna seansa",
           durationMinutes: 60,
           priceEur: 55.25,
+          online: true,
         };
         const input = registration("therapist@example.test");
         const started = await auth.startRegistration(input, details);
@@ -519,6 +526,7 @@ test(
         assert.equal(profile.services.length, 1);
         assert.equal(profile.services[0].priceEur, 55.25);
         assert.equal(profile.services[0].durationMinutes, 60);
+        assert.equal(profile.services[0].online, true);
         assert.equal(
           (
             await database.pool.query(

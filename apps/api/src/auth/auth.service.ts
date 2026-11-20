@@ -185,8 +185,8 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
       if (therapistProfile) {
         // Privremeni profil još nije nalog; potvrda kasnije čuva korisnika, profil i uslugu odjednom.
         await client.query(
-          `INSERT INTO therapist_registration_details (challenge_id,title,biography,city,address,phone,service_name,duration_minutes,price_eur)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+          `INSERT INTO therapist_registration_details (challenge_id,title,biography,city,address,phone,service_name,duration_minutes,price_eur,online)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
           [
             id,
             therapistProfile.title,
@@ -197,6 +197,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
             therapistProfile.serviceName,
             therapistProfile.durationMinutes,
             therapistProfile.priceEur,
+            therapistProfile.online === true,
           ],
         );
       }
@@ -322,12 +323,13 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
     );
     // Engleski tekst privremeno koristi isti unos; nema izmišljenog automatskog prevoda.
     await client.query(
-      `INSERT INTO services (therapist_id,name_mne,name_en,duration_minutes,price_eur) VALUES ($1,$2,$2,$3,$4)`,
+      `INSERT INTO services (therapist_id,name_mne,name_en,duration_minutes,price_eur,online) VALUES ($1,$2,$2,$3,$4,$5)`,
       [
         profile.rows[0].id,
         details.service_name,
         details.duration_minutes,
         details.price_eur,
+        details.online,
       ],
     );
   }
@@ -571,8 +573,9 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
       name_mne: string;
       duration_minutes: number;
       price_eur: string | null;
+      online: boolean;
     }>(
-      "SELECT id,name_mne,duration_minutes,price_eur FROM services WHERE therapist_id = $1 AND is_active ORDER BY duration_minutes DESC,created_at,id",
+      "SELECT id,name_mne,duration_minutes,price_eur,online FROM services WHERE therapist_id = $1 AND is_active ORDER BY duration_minutes DESC,created_at,id",
       [profile.id],
     );
     const photos = await this.database.pool.query<{
@@ -598,6 +601,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         name: service.name_mne,
         durationMinutes: service.duration_minutes,
         priceEur: service.price_eur === null ? null : Number(service.price_eur),
+        online: service.online,
       })),
     };
   }

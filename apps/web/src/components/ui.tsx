@@ -85,6 +85,8 @@ export function Price({ value }: { value: number | null }) {
 export function TherapistCard({ therapist }: { therapist: Therapist }) {
   const { locale, translate } = useDemo();
   const active = therapist.services.filter((service) => service.active);
+  const offersOnline = active.some((service) => service.online === true);
+  const offersInPerson = active.some((service) => service.online !== true);
   const prices = active
     .map((service) => service.price)
     .filter((price): price is number => price !== null);
@@ -105,7 +107,11 @@ export function TherapistCard({ therapist }: { therapist: Therapist }) {
         <MapPin size={14} />
         {therapist.city}
         <span className="dot" />
-        {translate("Uživo", "In person")}
+        {offersOnline
+          ? offersInPerson
+            ? translate("Uživo i online", "In person and online")
+            : translate("Online", "Online")
+          : translate("Uživo", "In person")}
       </div>
       <div className="tags">
         {(locale === "mne" ? therapist.approaches : therapist.approachesEn).map(

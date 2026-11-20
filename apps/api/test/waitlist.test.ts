@@ -93,6 +93,7 @@ test(
       "migrations/012-client-materials.sql",
       "migrations/013-profile-analytics.sql",
       "migrations/014-profile-view-events.sql",
+      "migrations/015-online-sessions.sql",
     ]) {
       await database.pool.query(
         await readFile(resolve(__dirname, "../../../db", file), "utf8"),
@@ -189,6 +190,44 @@ test(
         ...overrides,
       };
     }
+
+    await context.test(
+      "waiting-list consent includes modality and assigned bookings retain it",
+      async () => {
+        const data = await fixture();
+        const original = await occupy(data);
+        await database.pool.query(
+          "UPDATE services SET online=true WHERE id=$1",
+          [data.service],
+        );
+        await assert.rejects(
+          waitlist.join(data.first, input(data)),
+          /način rada/,
+        );
+        await waitlist.join(data.first, input(data, { online: "true" }));
+        await bookings.respond(data.patient, original, { action: "cancel" });
+        const assigned = (await bookings.list(data.first)).bookings;
+        assert.equal(assigned.length, 1);
+        assert.equal(assigned[0].online, true);
+
+        const changed = await fixture();
+        await occupy(changed);
+        await waitlist.join(changed.first, input(changed));
+        await bookings.saveSchedule(changed.owner, {
+          action: "service",
+          serviceId: changed.service,
+          name: "Online ponuda",
+          duration: "50",
+          price: "45",
+          online: "true",
+        });
+        assert.equal(
+          (await waitlist.listForUser(accounts.get(changed.first)!))[0].status,
+          "UNAVAILABLE",
+        );
+        assert.equal((await bookings.list(changed.first)).bookings.length, 0);
+      },
+    );
 
     await context.test(
       "FIFO, duplicate submissions, ownership, one assignment and two email recipients",

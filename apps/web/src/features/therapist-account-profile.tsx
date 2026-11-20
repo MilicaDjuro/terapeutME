@@ -132,7 +132,10 @@ export function TherapistAccountProfileCard() {
                 <strong>{service.name}</strong>
                 <span>
                   {service.durationMinutes} min ·{" "}
-                  <Price value={service.priceEur} />
+                  {service.online
+                    ? translate("Online", "Online")
+                    : translate("Uživo", "In person")}{" "}
+                  · <Price value={service.priceEur} />
                 </span>
               </li>
             ))}

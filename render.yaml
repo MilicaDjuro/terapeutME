@@ -25,3 +25,6 @@ services:
         sync: false
       - key: AUTH_EMAIL_MODE
         value: disabled
+      # Daily se uključuje tek kada nalog i tajni serverski ključ budu spremni.
+      - key: ONLINE_SESSIONS_PROVIDER
+        value: disabled

@@ -6,7 +6,7 @@ import {
   ServiceUnavailableException,
 } from "@nestjs/common";
 import { DatabaseService } from "./database.service";
-import { configuredEmailMode } from "./config";
+import { configuredEmailMode, configuredVideoProvider } from "./config";
 
 // Zajednički početak /api/v1 dodaje main.ts. Ovdje dodajemo /health.
 @Controller("health")
@@ -25,7 +25,14 @@ export class HealthController {
       const analytics = await this.database.pool.query(
         "SELECT name FROM schema_migrations WHERE name IN ('013-profile-analytics','014-profile-view-events')",
       );
-      if (migration.rowCount !== 11 || analytics.rowCount !== 2)
+      const online = await this.database.pool.query(
+        "SELECT name FROM schema_migrations WHERE name='015-online-sessions'",
+      );
+      if (
+        migration.rowCount !== 11 ||
+        analytics.rowCount !== 2 ||
+        online.rowCount !== 1
+      )
         throw new Error("Migracije nijesu primijenjene.");
     } catch {
       throw new ServiceUnavailableException(
@@ -45,6 +52,7 @@ export class HealthController {
       waitlist: "enabled",
       clientMaterials: "private",
       profileAnalytics: "enabled",
+      onlineSessions: configuredVideoProvider(),
     };
   }
 }

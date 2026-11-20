@@ -273,6 +273,12 @@ test(
         "utf8",
       ),
     );
+    await database.pool.query(
+      await readFile(
+        resolve(rootDirectory, "db/migrations/015-therapist-notes.sql"),
+        "utf8",
+      ),
+    );
     // Potvrda kreira jedan nalog, serijalizuje paralelne pokušaje i izdaje opozivu sesiju.
     await context.test(
       "account appears only after verification; concurrent verification creates one account",

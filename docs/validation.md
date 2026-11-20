@@ -1,5 +1,13 @@
 # Provjera početne verzije
 
+## Privatne bilješke terapeuta — 20. novembar 2026.
+
+- Dodata je rubrika `/dashboard/notes` iz radnog prostora, menija „Moj nalog“ i kartice klijentovog termina. Terapeut bira svog klijenta, dodaje više naslovljenih bilješki, uređuje ih i arhivira. Sadržaj je odvojen od domaćih zadataka i nije dostupan klijentu, drugom terapeutu istog klijenta ili admin ulozi kroz ovaj API.
+- Migracija `015-therapist-notes` primijenjena je na lokalnu bazu bez reseta. Upis provjerava JWT, vlasništvo, vezu sa klijentom i verziju; čitanje i upis ne šalju bilješke u email/outbox. Poseban JSON limit od 128 KB pokriva najviše 20000 znakova i UTF-8/JSON kodiranje, a ostali formulari zadržavaju 16 KB.
+- Prolaze `npm.cmd run typecheck`, svih **121 domenskih/API provjera** bez preskakanja (26 domenskih i 95 API), produkcioni frontend/API build i `npm.cmd run format:check`. Novi skup ima šest provjera: sesije/uloge/veza sa klijentom i granice unosa, više zapisa po klijentu i očuvana veza nakon otkazivanja, odvajanje dva terapeuta istog klijenta, uređivanje i konflikt verzija uključujući paralelne upise, rollback pri grešci i arhiviranje bez uticaja na druge bilješke/materijale/outbox. Test početne migracije sada očekuje 14 migracija i provjerava novu tabelu u nizu.
+- Završno prolaze **4/4 browser scenarija** u Edge-u: novi cjeloviti tok bilješki, dva postojeća za privatne materijale i klijentov nalog/profil. Potvrđeni su spinner, čuvanje nakon reload-a, izbor drugog klijenta, uspješna izmjena, konflikt drugog taba bez gubitka unosa, 15000 UTF-8 znakova, `no-store`, odbijanje čitanja/upisa klijentu i drugom terapeutu, odsustvo teksta u dijeljenim podacima, arhiviranje, brzi link sa termina i mobilna širina bez prelivanja.
+- Pregledan je sintetički mobilni snimak `test-results/therapist-notes-*/private-notes-mobile.png`. Instalirane su već deklarisane zavisnosti, jer je lokalno nedostajao SES SDK; `package.json` i lock nijesu mijenjani. Generisani Next ulaz poslije testova vraćen je na prethodni praćeni sadržaj. Kod i mjesta za breakpoint opisani su u [private-notes.md](private-notes.md).
+
 ## Amazon SES priprema — 19. novembar 2026.
 
 - Dodata je HTTPS SES v2 dostava za registraciju, reset i booking outbox, UTF-8 sadržaj, povratno sanduče i opcioni configuration set. SDK ima jedan pokušaj, rok je 15 sekundi i uspjeh traži `MessageId`. Provider poruke i tajne se ne loguju.

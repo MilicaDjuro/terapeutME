@@ -93,6 +93,7 @@ test(
       "migrations/012-client-materials.sql",
       "migrations/013-profile-analytics.sql",
       "migrations/014-profile-view-events.sql",
+      "migrations/015-therapist-notes.sql",
     ]) {
       await database.pool.query(
         await readFile(resolve(__dirname, "../../../db", file), "utf8"),

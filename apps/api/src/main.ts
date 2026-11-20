@@ -13,7 +13,9 @@ import express from "express";
 async function bootstrap() {
   validateConfiguration();
   const app = await NestFactory.create(AppModule, { bodyParser: false });
-  // Kratak JSON limit sprečava slanje ogromnih formulara; tajne se nikada ne loguju.
+  // Duža privatna bilješka može imati do 20000 znakova; poseban limit pokriva i UTF-8/JSON kodiranje.
+  app.use("/api/v1/therapist-notes", express.json({ limit: "128kb" }));
+  // Ostali formulari zadržavaju kratak limit; sadržaj bilješki i tajne se nikada ne loguju.
   app.use(express.json({ limit: "16kb" }));
   app.enableShutdownHooks();
   app.setGlobalPrefix("api/v1");

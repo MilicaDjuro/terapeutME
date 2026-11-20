@@ -16,6 +16,8 @@ Ovaj vodič je za osobu koja zna osnove JavaScripta, ali tek upoznaje Next.js, N
 
 ## Kako Next.js pronađe stranicu
 
+Privatne bilješke po klijentu su na `/dashboard/notes`: `features/therapist-notes.tsx` prikazuje izbor klijenta i formular, a API `notes/therapist-notes.service.ts` provjerava autora, vezu sa klijentom i verziju prije upisa. Bilješke se ne dijele sa klijentom. Tok baze, privatnost i mjesta za breakpoint su u [private-notes.md](private-notes.md).
+
 Privatna analitika terapeuta je na `/dashboard/analytics`: `features/profile-analytics.tsx` odvojeno prikazuje trenutno stanje svih rezervacija i istorijske radnje u periodu, `features/analytics-visitors.tsx` različite/ponovljene posjete i tabele, a API `analytics/analytics.service.ts` računa podatke iz baze. „Primljeni zahtjevi u periodu“ uključuju i već obrađene; „Na čekanju sada“ pokazuje samo aktivno čekanje. Migracija 014 dodaje svaki pregled, uključujući anonimne browsere i ponavljanja. Definicije i debugging su u [profile-analytics.md](profile-analytics.md).
 
 Next.js koristi nazive foldera unutar `apps/web/src/app`. Fajl `page.tsx` predstavlja jednu stranicu. Fajl `layout.tsx` je omotač oko stranica: dodaje zajednički HTML i komponente.

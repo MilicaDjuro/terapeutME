@@ -29,6 +29,8 @@ import {
 import { MaterialsService } from "./materials/materials.service";
 import { AnalyticsController } from "./analytics/analytics.controller";
 import { AnalyticsService } from "./analytics/analytics.service";
+import { TherapistNotesController } from "./notes/therapist-notes.controller";
+import { TherapistNotesService } from "./notes/therapist-notes.service";
 
 // Auth, raspored i rezervacije koriste bazu i zajednička poslovna pravila.
 @Module({
@@ -43,6 +45,7 @@ import { AnalyticsService } from "./analytics/analytics.service";
     WaitlistController,
     MaterialsController,
     AnalyticsController,
+    TherapistNotesController,
   ],
   providers: [
     DatabaseService,
@@ -61,6 +64,7 @@ import { AnalyticsService } from "./analytics/analytics.service";
     MaterialsService,
     MaterialsSessionGuard,
     AnalyticsService,
+    TherapistNotesService,
   ],
 })
 export class AppModule {}

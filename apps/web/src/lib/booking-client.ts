@@ -3,6 +3,7 @@ import { AuthRequestError } from "./auth-client";
 
 export interface ServerBooking extends Booking {
   therapistName: string;
+  clientUserId?: string | null;
 }
 export interface ServerSlot {
   start: number;

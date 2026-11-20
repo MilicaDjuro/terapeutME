@@ -537,6 +537,16 @@ function ServerBookingCard({
                 <Phone size={14} aria-hidden="true" />
                 {booking.clientPhone}
               </a>
+              {booking.clientUserId && (
+                <Link
+                  href={`/dashboard/notes?client=${encodeURIComponent(booking.clientUserId)}`}
+                >
+                  {translate(
+                    "Privatne bilješke za klijenta",
+                    "Private notes for this client",
+                  )}
+                </Link>
+              )}
             </div>
           )}
         </>

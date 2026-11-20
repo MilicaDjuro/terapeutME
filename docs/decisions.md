@@ -1,6 +1,6 @@
 # Terapeut.me — dogovor za početnu verziju
 
-Posljednja izmjena: 25. oktobar 2026.
+Posljednja izmjena: 20. novembar 2026.
 
 19. novembar 2026: korisnik bira pripremu Amazon SES email dostave i planira Cloudflare R2 za fajlove. SES koristi HTTPS na Render Free; slanje ostaje isključeno dok ne budu spremni AWS nalog, DNS/identitet, ograničeni IAM ključ i povratno sanduče. DNS domena je trenutno povezan sa Base44, pa se dodaju samo novi provjereni zapisi bez promjene web adrese. R2 migracija fajlova je zaseban naredni posao.
 
@@ -32,6 +32,8 @@ Klijent i terapeut mogu otkazati potvrđeni termin u bilo kom trenutku. Razlog j
 Terapeut može od potvrđene buduće seanse konkretnog klijenta napraviti stalni termin na 7 ili 14 dana, u istom lokalnom satu. Serija traje dok je terapeut ne zaustavi; server održava zasebne potvrđene rezervacije za narednih 90 dana. Pojedinačni predlog drugog vremena ili otkazivanje ne pomjera ostale seanse i ne dovodi do ponovnog stvaranja otkazanog termina. Prekid serije otkazuje buduće seanse uz potvrdu u prikazu; prošli ishodi i istorija ostaju. Konflikt početnog skupa vraća cijeli novi upis, dok se kasniji problematični datumi jasno prikazuju za ručnu zamjenu. Tehnički tok je u [recurring-bookings.md](recurring-bookings.md).
 
 ## Kontakt i ishodi
+
+20. novembar 2026: svaki terapeut vodi više privatnih bilješki po svom klijentu na `/dashboard/notes`. Klijenta bira iz vlastitih zahtjeva/termina, uključujući otkazane. Bilješka ima naslov, tekst i serverske datume; autor je jedini korisnik koji joj ima pristup kroz aplikaciju. Drugi terapeut istog klijenta ne vidi autorove bilješke, niti ih vidi klijent ili admin uloga. Uređivanje provjerava verziju, a arhiviranje uklanja zapis iz aktivnog pregleda uz očuvanje u bazi. Nema slanja bilješki emailom ili prikaza u dijeljenim materijalima. Tok je u [private-notes.md](private-notes.md).
 
 Analitika odvojeno prikazuje **trenutno stanje svih rezervacija** (svi zapisi, čekanje sada, potvrđeni i istorija), bez filtera perioda, i **radnje u izabranom periodu**. „Primljeni zahtjevi u periodu“ zadržavaju i obrađene/otkazane zahtjeve; ne predstavljaju broj zahtjeva koji trenutno čekaju odgovor. Potvrde u periodu takođe ostaju u istoriji poslije kasnijeg otkazivanja.
 

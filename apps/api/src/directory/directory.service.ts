@@ -23,6 +23,8 @@ interface DirectoryRow {
   is_verified: boolean;
   is_active: boolean;
   accepting_clients: boolean;
+  rating_total: number;
+  rating_count: number;
   services: {
     id: string;
     public_id: string | null;
@@ -58,6 +60,11 @@ export class DirectoryService {
   ): Promise<PublicTherapist[]> {
     const result = await connection.query<DirectoryRow>(
       `SELECT t.*,
+      -- Zbir, ne prosjek: ispravljeni nedolasci i otkazane seanse ne daju bodove.
+      COALESCE((SELECT sum(r.score)::float8 FROM session_ratings r JOIN booking_requests b ON b.id=r.booking_id
+        WHERE b.therapist_id=t.id AND b.status IN ('CONFIRMED','COMPLETED') AND b.end_at<=now()),0) AS rating_total,
+      (SELECT count(*)::float8 FROM session_ratings r JOIN booking_requests b ON b.id=r.booking_id
+        WHERE b.therapist_id=t.id AND b.status IN ('CONFIRMED','COMPLETED') AND b.end_at<=now()) AS rating_count,
       COALESCE((SELECT jsonb_agg(s ORDER BY s.created_at,s.id) FROM services s WHERE s.therapist_id=t.id),'[]') AS services,
       COALESCE((SELECT jsonb_agg(w ORDER BY w.weekday,w.start_minute) FROM availability_windows w WHERE w.therapist_id=t.id AND w.is_active),'[]') AS availability,
       COALESCE((SELECT jsonb_agg(jsonb_build_object('id',d.id,'date',d.work_date::text,'working',d.is_working,
@@ -97,6 +104,8 @@ export class DirectoryService {
         verified: row.is_verified,
         active: row.is_active,
         acceptingClients: row.accepting_clients,
+        ratingTotal: row.rating_total,
+        ratingCount: row.rating_count,
         color: row.avatar_color,
         initials: initials.join("").toUpperCase(),
         services: row.services.map((service) => ({

@@ -78,6 +78,9 @@ export interface Therapist {
   verified: boolean;
   active: boolean;
   acceptingClients: boolean;
+  // Stvarni profil dobija zbir bodova iz baze; demo nema izmišljene ocjene.
+  ratingTotal?: number;
+  ratingCount?: number;
   color: string;
   initials: string;
   services: Service[];

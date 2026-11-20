@@ -31,6 +31,8 @@ import { AnalyticsController } from "./analytics/analytics.controller";
 import { AnalyticsService } from "./analytics/analytics.service";
 import { TherapistNotesController } from "./notes/therapist-notes.controller";
 import { TherapistNotesService } from "./notes/therapist-notes.service";
+import { SessionRatingController } from "./bookings/session-rating.controller";
+import { SessionRatingService } from "./bookings/session-rating.service";
 
 // Auth, raspored i rezervacije koriste bazu i zajednička poslovna pravila.
 @Module({
@@ -46,6 +48,7 @@ import { TherapistNotesService } from "./notes/therapist-notes.service";
     MaterialsController,
     AnalyticsController,
     TherapistNotesController,
+    SessionRatingController,
   ],
   providers: [
     DatabaseService,
@@ -65,6 +68,7 @@ import { TherapistNotesService } from "./notes/therapist-notes.service";
     MaterialsSessionGuard,
     AnalyticsService,
     TherapistNotesService,
+    SessionRatingService,
   ],
 })
 export class AppModule {}

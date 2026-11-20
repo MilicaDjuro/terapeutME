@@ -43,6 +43,7 @@ async function migrate() {
       "013-profile-analytics.sql",
       "014-profile-view-events.sql",
       "015-therapist-notes.sql",
+      "016-session-ratings.sql",
     ]) {
       // Evidentirane migracije ne izvršavamo ponovo: stara 005 ne smije deaktivirati nove seanse od 40/50 minuta.
       const table = await pool.query(

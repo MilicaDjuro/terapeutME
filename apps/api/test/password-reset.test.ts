@@ -127,6 +127,7 @@ test(
       "db/migrations/014-profile-view-events.sql",
 
       "db/migrations/015-therapist-notes.sql",
+      "db/migrations/016-session-ratings.sql",
     ]) {
       await database.pool.query(await readFile(resolve(root, file), "utf8"));
     }

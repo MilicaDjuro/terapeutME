@@ -30,7 +30,7 @@ export class HealthController {
       );
       if (
         migration.rowCount !== 11 ||
-        analytics.rowCount !== 2 ||
+        features.rowCount !== 4 ||
         online.rowCount !== 1
       )
         throw new Error("Migracije nijesu primijenjene.");

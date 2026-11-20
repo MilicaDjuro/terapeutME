@@ -29,6 +29,10 @@ import {
 import { MaterialsService } from "./materials/materials.service";
 import { AnalyticsController } from "./analytics/analytics.controller";
 import { AnalyticsService } from "./analytics/analytics.service";
+import { TherapistNotesController } from "./notes/therapist-notes.controller";
+import { TherapistNotesService } from "./notes/therapist-notes.service";
+import { SessionRatingController } from "./bookings/session-rating.controller";
+import { SessionRatingService } from "./bookings/session-rating.service";
 import { DailyService } from "./online-sessions/daily.service";
 import { OnlineSessionsService } from "./online-sessions/online-sessions.service";
 import { OnlineSessionsController } from "./online-sessions/online-sessions.controller";
@@ -46,6 +50,8 @@ import { OnlineSessionsController } from "./online-sessions/online-sessions.cont
     WaitlistController,
     MaterialsController,
     AnalyticsController,
+    TherapistNotesController,
+    SessionRatingController,
     OnlineSessionsController,
   ],
   providers: [
@@ -65,6 +71,8 @@ import { OnlineSessionsController } from "./online-sessions/online-sessions.cont
     MaterialsService,
     MaterialsSessionGuard,
     AnalyticsService,
+    TherapistNotesService,
+    SessionRatingService,
     DailyService,
     OnlineSessionsService,
   ],

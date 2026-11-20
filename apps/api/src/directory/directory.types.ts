@@ -17,6 +17,8 @@ export interface PublicTherapist {
   verified: boolean;
   active: boolean;
   acceptingClients: boolean;
+  ratingTotal: number;
+  ratingCount: number;
   color: string;
   initials: string;
   services: {

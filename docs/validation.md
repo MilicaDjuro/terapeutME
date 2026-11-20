@@ -1,5 +1,31 @@
 # Provjera početne verzije
 
+## Ocjenjivanje bez ručne oznake završetka — 20. novembar 2026.
+
+- Po novom zahtjevu korisnika, `CONFIRMED` i `COMPLETED` seanse otvaraju ocjenu kada stvarni `end_at` prođe. Nepotvrđene, otkazane, odbijene, buduće i seanse koje još traju, kao i nedolasci, ostaju isključeni. Upis ocjene ne mijenja status rezervacije.
+- `ServerBookings` ima filter „Za ocjenjivanje“ sa brojem dostupnih neocijenjenih seansi. Postojeće osvježavanje na pet sekundi prenosi novo pravo iz API-ja u otvoren tab. Zbir na kartici i profilu koristi ista dozvoljena stanja, pa kasnija ručna oznaka završetka ne duplira doprinos.
+- TypeScript i svih **128 domenskih/API provjera** prolaze bez preskakanja. Prilagođen skup ocjena testira prošlu potvrđenu seansu bez ručnog završetka, te odbija buduću i seansu koja je počela ali još traje. Provjerava i isti zbir prije/poslije ručne oznake završetka.
+- Prolaze produkcioni build, provjera formata i **2/2 Edge browser scenarija**: ocjenjivanje i postojeći klijentov nalog. Novi tok provjerava formular dok rezervacija ostaje `CONFIRMED`, filter neocijenjenih seansi i automatski prikaz nakon prelaska vremena bez reload-a; ostaju provjereni privatnost, spinner, retry i javni zbir. Pregledan je sintetički mobilni snimak `automatic-rating-options-mobile.png`.
+- Na izričit zahtjev korisnika u lokalnoj bazi su tri prošle seanse ciljnog klijenta označene kao `COMPLETED`: 9, 16. i 20. novembra. Izmjena je ograničena na tačan nalog i prošle potvrđene neocijenjene rezervacije; čuva verziju, istoriju i sve buduće termine. Nije upisana nijedna ocjena niti poslato email obavještenje.
+
+## Ocjene završenih seansi — 20. novembar 2026.
+
+- Dopuna prikaza: `TherapistCard` sada prikazuje istaknut tirkizni blok sa zbirom bodova i brojem ocijenjenih seansi na početnoj i u katalogu. Proširen Edge scenario provjerava oba prikaza sa stvarnim zbirom 8, stanje bez ocjena i širinu od 390 px bez horizontalnog prelivanja. Vizuelno je pregledan snimak `rating-home-card-mobile.png` sa sintetičkim podacima.
+
+- Klijent bira broj 1–5 uz svoju završenu seansu, jednom po rezervaciji. Server provjerava JWT/ulogu, vlasništvo, `COMPLETED` i prošao `end_at`; paralelni klik i ponovljen isti upis čuvaju samo jednu ocjenu. Ispravka ishoda isključuje bodove bez brisanja ocjene.
+- Javni profil prikazuje zbir bodova i broj ocijenjenih seansi, bez zvjezdica, prosjeka i podataka klijenata. Primjer iz browser provjere: 5 + 3 = 8 bodova iz dvije seanse. Zbir dolazi direktno iz baze, bez zasebnog brojača.
+- Prolaze `npm.cmd run typecheck`, **128 domenskih/API provjera bez preskakanja** (26 domenskih i 102 API), `npm.cmd run build` i `npm.cmd run format:check`. Novi API skup ima sedam provjera uključujući glavni scenario: uloge/vlasništvo/granice, nezavršene i buduće seanse, paralelni upisi, zbir više klijenata/terapeuta, ispravke ishoda i rollback/retry.
+- Prolaze **2/2 Edge browser scenarija**: novi tok ocjenjivanja i postojeći klijentov nalog. Provjereni su oznaka završetka kroz dashboard, zabrana tuđe/buduće seanse, spinner i zaključana polja, sačuvan izbor poslije greške, uspješan retry, nestanak potvrde, očuvana ocjena nakon reload-a, strani Origin, javni zbir i mobilna širina bez prelivanja. Vizuelno je pregledan sintetički snimak `test-results/session-ratings-*/session-rating-profile-mobile.png`.
+- Migracija 016 primijenjena je na potvrđenu lokalnu bazu bez reseta postojećih naloga i rezervacija. Produkcioni deployment nije rađen. Tok i mjesta za debugging su u [session-ratings.md](session-ratings.md).
+
+## Privatne bilješke terapeuta — 20. novembar 2026.
+
+- Dodata je rubrika `/dashboard/notes` iz radnog prostora, menija „Moj nalog“ i kartice klijentovog termina. Terapeut bira svog klijenta, dodaje više naslovljenih bilješki, uređuje ih i arhivira. Sadržaj je odvojen od domaćih zadataka i nije dostupan klijentu, drugom terapeutu istog klijenta ili admin ulozi kroz ovaj API.
+- Migracija `015-therapist-notes` primijenjena je na lokalnu bazu bez reseta. Upis provjerava JWT, vlasništvo, vezu sa klijentom i verziju; čitanje i upis ne šalju bilješke u email/outbox. Poseban JSON limit od 128 KB pokriva najviše 20000 znakova i UTF-8/JSON kodiranje, a ostali formulari zadržavaju 16 KB.
+- Prolaze `npm.cmd run typecheck`, svih **121 domenskih/API provjera** bez preskakanja (26 domenskih i 95 API), produkcioni frontend/API build i `npm.cmd run format:check`. Novi skup ima šest provjera: sesije/uloge/veza sa klijentom i granice unosa, više zapisa po klijentu i očuvana veza nakon otkazivanja, odvajanje dva terapeuta istog klijenta, uređivanje i konflikt verzija uključujući paralelne upise, rollback pri grešci i arhiviranje bez uticaja na druge bilješke/materijale/outbox. Test početne migracije sada očekuje 14 migracija i provjerava novu tabelu u nizu.
+- Završno prolaze **4/4 browser scenarija** u Edge-u: novi cjeloviti tok bilješki, dva postojeća za privatne materijale i klijentov nalog/profil. Potvrđeni su spinner, čuvanje nakon reload-a, izbor drugog klijenta, uspješna izmjena, konflikt drugog taba bez gubitka unosa, 15000 UTF-8 znakova, `no-store`, odbijanje čitanja/upisa klijentu i drugom terapeutu, odsustvo teksta u dijeljenim podacima, arhiviranje, brzi link sa termina i mobilna širina bez prelivanja.
+- Pregledan je sintetički mobilni snimak `test-results/therapist-notes-*/private-notes-mobile.png`. Instalirane su već deklarisane zavisnosti, jer je lokalno nedostajao SES SDK; `package.json` i lock nijesu mijenjani. Generisani Next ulaz poslije testova vraćen je na prethodni praćeni sadržaj. Kod i mjesta za breakpoint opisani su u [private-notes.md](private-notes.md).
+
 ## Amazon SES priprema — 19. novembar 2026.
 
 - Dodata je HTTPS SES v2 dostava za registraciju, reset i booking outbox, UTF-8 sadržaj, povratno sanduče i opcioni configuration set. SDK ima jedan pokušaj, rok je 15 sekundi i uspjeh traži `MessageId`. Provider poruke i tajne se ne loguju.

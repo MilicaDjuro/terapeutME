@@ -7,6 +7,8 @@ export interface StoredBooking extends Booking {
   clientUserId: string | null;
   internalTherapistId: string;
   therapistName: string;
+  rating: number | null;
+  canRate: boolean;
 }
 
 /** Čita rezervacije i čuva događaje; dozvole provjerava BookingService prije poziva. */
@@ -34,6 +36,9 @@ export class BookingRepository {
         (extract(hour FROM b.start_at AT TIME ZONE 'Europe/Podgorica')*60+extract(minute FROM b.start_at AT TIME ZONE 'Europe/Podgorica'))::int+b.duration_minutes AS "end",
         b.client_name_snapshot AS "clientName",b.client_email_snapshot AS "clientEmail",b.client_phone_snapshot AS "clientPhone",
         b.status,b.created_at AS "createdAt",
+        CASE WHEN b.client_user_id::text=$2 THEN (SELECT r.score FROM session_ratings r WHERE r.booking_id=b.id) ELSE NULL END AS rating,
+        COALESCE(b.client_user_id::text=$2 AND b.status IN ('CONFIRMED','COMPLETED') AND b.end_at<=now()
+          AND NOT EXISTS(SELECT 1 FROM session_ratings r WHERE r.booking_id=b.id),false) AS "canRate",
         CASE WHEN bs.id IS NULL THEN NULL ELSE jsonb_build_object('id',bs.id,'intervalDays',bs.interval_days,
           'originalDate',to_char(b.occurrence_date,'YYYY-MM-DD'),'originalStart',bs.start_minute,'active',bs.is_active) END AS series,
         COALESCE((SELECT jsonb_agg(jsonb_build_object('at',e.created_at,'actor',lower(e.actor_role),'action',e.action,'from',e.previous_status,'to',e.next_status,'reason',e.reason,

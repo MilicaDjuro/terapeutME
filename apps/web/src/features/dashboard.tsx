@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BarChart3, Settings2 } from "lucide-react";
+import { BarChart3, NotebookPen, Settings2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useDemo } from "@/lib/demo-context";
 import { accountHome } from "@/lib/auth-client";
@@ -57,6 +57,10 @@ export function Dashboard() {
           </p>
         </div>
         <div className="booking-actions">
+          <Link href="/dashboard/notes" className="button button-outline">
+            <NotebookPen size={16} />
+            {translate("Privatne bilješke", "Private notes")}
+          </Link>
           <Link href="/dashboard/analytics" className="button button-outline">
             <BarChart3 size={16} />{" "}
             {translate("Analitika profila", "Profile analytics")}

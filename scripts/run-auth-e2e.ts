@@ -111,6 +111,12 @@ async function runAuthBrowserTests() {
       ),
     );
     await isolated.query(
+      await readFile(resolve("db/migrations/015-therapist-notes.sql"), "utf8"),
+    );
+    await isolated.query(
+      await readFile(resolve("db/migrations/016-session-ratings.sql"), "utf8"),
+    );
+    await isolated.query(
       await readFile(resolve("db/migrations/015-online-sessions.sql"), "utf8"),
     );
     apiProcess = spawn(process.execPath, [resolve("apps/api/dist/main.js")], {

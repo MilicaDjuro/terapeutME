@@ -87,6 +87,9 @@ test(
       "db/migrations/012-client-materials.sql",
       "db/migrations/013-profile-analytics.sql",
       "db/migrations/014-profile-view-events.sql",
+
+      "db/migrations/015-therapist-notes.sql",
+      "db/migrations/016-session-ratings.sql",
       "db/migrations/015-online-sessions.sql",
     ])
       await database.pool.query(

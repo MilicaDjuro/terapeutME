@@ -1,4 +1,5 @@
 "use client";
+import { SessionRating } from "./session-rating";
 import { useEffect, useState, useRef, type FormEvent } from "react";
 import {
   dateKey,
@@ -62,10 +63,13 @@ export function ServerBookings() {
         booking.status,
       ),
   );
+  // API provjerava kraj seanse na serveru; lista se sama osvježava svakih pet sekundi.
+  const ratingBookings = bookings.filter((booking) => booking.canRate);
   let visibleBookings = bookings;
   if (filter === "waiting") visibleBookings = waitingBookings;
   if (filter === "confirmed") visibleBookings = confirmedBookings;
   if (filter === "history") visibleBookings = historicalBookings;
+  if (filter === "rating") visibleBookings = ratingBookings;
   const currentTime = new Date();
   // Budući aktivni termini idu od najbližeg datuma i sata, bez prednosti određenog statusa.
   const sortedBookings = [...visibleBookings].sort(compareBookings);
@@ -295,6 +299,17 @@ export function ServerBookings() {
             <span>{translate("Istorija", "History")}</span>
             <strong>{historicalBookings.length}</strong>
           </button>
+          {!therapistView && (
+            <button
+              type="button"
+              className="rating-filter"
+              aria-pressed={filter === "rating"}
+              onClick={() => setFilter("rating")}
+            >
+              <span>{translate("Za ocjenjivanje", "To rate")}</span>
+              <strong>{ratingBookings.length}</strong>
+            </button>
+          )}
         </div>
       )}
       {loading ? (
@@ -537,6 +552,16 @@ function ServerBookingCard({
                 <Phone size={14} aria-hidden="true" />
                 {booking.clientPhone}
               </a>
+              {booking.clientUserId && (
+                <Link
+                  href={`/dashboard/notes?client=${encodeURIComponent(booking.clientUserId)}`}
+                >
+                  {translate(
+                    "Privatne bilješke za klijenta",
+                    "Private notes for this client",
+                  )}
+                </Link>
+              )}
             </div>
           )}
         </>

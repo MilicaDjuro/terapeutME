@@ -1,6 +1,7 @@
 // Javni profil stručnjaka. Prikazuje podatke i usluge, bez izmjene rasporeda.
 "use client";
 import Link from "next/link";
+import { useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,7 +20,11 @@ import { ProfileViewTracker } from "@/components/profile-view-tracker";
 /** Prikazuje javni profil, usluge i mogućnost zakazivanja za aktivnog terapeuta. */
 export function TherapistProfile({ id }: { id: string }) {
   const { translate, locale } = useDemo();
-  const { therapists, loading, error } = useDirectory();
+  const { therapists, loading, error, refresh } = useDirectory();
+  useEffect(() => {
+    // Otvaranje drugog profila ponovo čita zbir iz baze, i kada je katalog već bio učitan.
+    void refresh();
+  }, [id, refresh]);
   if (error) return <DirectoryError />;
   if (loading)
     return (
@@ -61,6 +66,36 @@ export function TherapistProfile({ id }: { id: string }) {
                 {translate("Susreti uživo", "In-person sessions")}
               </span>
             </div>
+          </div>
+          <div className="profile-section">
+            <h2>{translate("Ocjene klijenata", "Client ratings")}</h2>
+            <div
+              className="profile-rating"
+              aria-label={translate(
+                "Ukupan zbir ocjena",
+                "Total rating points",
+              )}
+            >
+              <strong>{therapist.ratingTotal ?? 0}</strong>
+              <div>
+                <p>{translate("Ukupno bodova", "Total points")}</p>
+                <span className="muted small">
+                  {translate("Broj ocijenjenih seansi", "Rated sessions")}:{" "}
+                  {therapist.ratingCount ?? 0}
+                </span>
+              </div>
+            </div>
+            <p className="muted small">
+              {(therapist.ratingCount ?? 0) > 0
+                ? translate(
+                    "Zbir ocjena od 1 do 5 nakon završenih seansi. Isti klijent može ocijeniti svaku svoju završenu seansu.",
+                    "Sum of ratings from 1 to 5 after completed sessions. A client may rate each of their completed sessions.",
+                  )
+                : translate(
+                    "Još nema ocjena završenih seansi.",
+                    "No completed session ratings yet.",
+                  )}
+            </p>
           </div>
           <div className="profile-section">
             <h2>{translate("O meni", "About me")}</h2>

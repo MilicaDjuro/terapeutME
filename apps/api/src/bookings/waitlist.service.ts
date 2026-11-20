@@ -523,6 +523,8 @@ export class WaitlistService implements OnModuleInit, OnModuleDestroy {
             clientUserId: entry.client_user_id,
             internalTherapistId: therapistId,
             therapistName: profile.name,
+            rating: null,
+            canRate: false,
           });
           assigned = true;
           break;

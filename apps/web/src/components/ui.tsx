@@ -103,6 +103,22 @@ export function TherapistCard({ therapist }: { therapist: Therapist }) {
       <p className="card-title">
         {locale === "mne" ? therapist.title : therapist.titleEn}
       </p>
+      {/* Zbir već dolazi iz baze; ista kartica se koristi na početnoj i u katalogu. */}
+      <div
+        className="card-rating"
+        role="group"
+        aria-label={translate("Ocjene klijenata", "Client ratings")}
+      >
+        <div className="card-rating-points">
+          <strong>{therapist.ratingTotal ?? 0}</strong>
+          <span>{translate("Ukupno bodova", "Total points")}</span>
+        </div>
+        <span className="card-rating-count">
+          {(therapist.ratingCount ?? 0) > 0
+            ? `${translate("Ocijenjene seanse", "Rated sessions")}: ${therapist.ratingCount}`
+            : translate("Još nema ocjena", "No ratings yet")}
+        </span>
+      </div>
       <div className="card-location">
         <MapPin size={14} />
         {therapist.city}

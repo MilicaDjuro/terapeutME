@@ -3,6 +3,9 @@ import { AuthRequestError } from "./auth-client";
 
 export interface ServerBooking extends Booking {
   therapistName: string;
+  clientUserId?: string | null;
+  rating?: number | null;
+  canRate?: boolean;
 }
 export interface ServerSlot {
   start: number;
@@ -10,6 +13,7 @@ export interface ServerSlot {
   available: boolean;
 }
 export interface BookingResponse {
+  rating?: number;
   waitlist?: WaitlistEntry[];
   waitlistEntry?: WaitlistEntry;
   series?: RecurringSeries[];

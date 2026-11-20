@@ -42,6 +42,8 @@ async function migrate() {
       "012-client-materials.sql",
       "013-profile-analytics.sql",
       "014-profile-view-events.sql",
+      "015-therapist-notes.sql",
+      "016-session-ratings.sql",
       "015-online-sessions.sql",
     ]) {
       // Evidentirane migracije ne izvršavamo ponovo: stara 005 ne smije deaktivirati nove seanse od 40/50 minuta.

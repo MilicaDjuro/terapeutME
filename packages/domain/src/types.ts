@@ -80,6 +80,9 @@ export interface Therapist {
   verified: boolean;
   active: boolean;
   acceptingClients: boolean;
+  // Stvarni profil dobija zbir bodova iz baze; demo nema izmišljene ocjene.
+  ratingTotal?: number;
+  ratingCount?: number;
   color: string;
   initials: string;
   services: Service[];
@@ -204,3 +207,19 @@ export interface ProfileAnalytics {
   visitorPages: number;
 }
 export type ProfileViewerKind = "CLIENT" | "ANONYMOUS" | "OTHER" | "SELF";
+
+// Privatna bilješka je odvojena od domaćih zadataka i materijala koji se dijele klijentu.
+export interface TherapistClientNote {
+  id: string;
+  clientUserId: string;
+  title: string;
+  content: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface TherapistNoteClient {
+  id: string;
+  name: string;
+  email: string;
+}

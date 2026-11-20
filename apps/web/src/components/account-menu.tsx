@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   BarChart3,
+  NotebookPen,
   CalendarDays,
   ChevronDown,
   LayoutDashboard,
@@ -140,6 +141,12 @@ export function AccountMenu() {
             <Link href="/dashboard/analytics" onClick={handleClose}>
               <BarChart3 size={17} aria-hidden="true" />
               {translate("Analitika profila", "Profile analytics")}
+            </Link>
+          )}
+          {user.role === "THERAPIST" && (
+            <Link href="/dashboard/notes" onClick={handleClose}>
+              <NotebookPen size={17} aria-hidden="true" />
+              {translate("Privatne bilješke", "Private notes")}
             </Link>
           )}
           {user.role === "THERAPIST" && (

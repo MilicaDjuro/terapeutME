@@ -275,6 +275,18 @@ test(
     );
     await database.pool.query(
       await readFile(
+        resolve(rootDirectory, "db/migrations/015-therapist-notes.sql"),
+        "utf8",
+      ),
+    );
+    await database.pool.query(
+      await readFile(
+        resolve(rootDirectory, "db/migrations/016-session-ratings.sql"),
+        "utf8",
+      ),
+    );
+    await database.pool.query(
+      await readFile(
         resolve(rootDirectory, "db/migrations/015-online-sessions.sql"),
         "utf8",
       ),

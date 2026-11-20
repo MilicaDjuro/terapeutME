@@ -22,8 +22,8 @@ export class HealthController {
       const migration = await this.database.pool.query(
         "SELECT name FROM schema_migrations WHERE name IN ('002-auth','003-therapist-registration','004-directory-photos','005-booking-sessions','006-profile-contact','007-password-reset','008-date-availability','009-booking-notifications','010-recurring-bookings','011-waitlist','012-client-materials')",
       );
-      const analytics = await this.database.pool.query(
-        "SELECT name FROM schema_migrations WHERE name IN ('013-profile-analytics','014-profile-view-events')",
+      const features = await this.database.pool.query(
+        "SELECT name FROM schema_migrations WHERE name IN ('013-profile-analytics','014-profile-view-events','015-therapist-notes','016-session-ratings')",
       );
       const online = await this.database.pool.query(
         "SELECT name FROM schema_migrations WHERE name='015-online-sessions'",
@@ -52,6 +52,8 @@ export class HealthController {
       waitlist: "enabled",
       clientMaterials: "private",
       profileAnalytics: "enabled",
+      therapistNotes: "private",
+      sessionRatings: "enabled",
       onlineSessions: configuredVideoProvider(),
     };
   }

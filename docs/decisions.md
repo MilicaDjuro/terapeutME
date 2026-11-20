@@ -2,6 +2,8 @@
 
 Posljednja izmjena: 25. oktobar 2026.
 
+19. novembar 2026: korisnik bira pripremu Amazon SES email dostave i planira Cloudflare R2 za fajlove. SES koristi HTTPS na Render Free; slanje ostaje isključeno dok ne budu spremni AWS nalog, DNS/identitet, ograničeni IAM ključ i povratno sanduče. DNS domena je trenutno povezan sa Base44, pa se dodaju samo novi provjereni zapisi bez promjene web adrese. R2 migracija fajlova je zaseban naredni posao.
+
 ## Obim
 
 Katalog, javni profili, usluge, dostupnost, izbor termina, zahtjevi i osnovna administracija. Nema klinika, online plaćanja, pretplata ni online susreta. Javni neverifikovani profili su dozvoljeni. Verifikaciju dodjeljuje isključivo admin.

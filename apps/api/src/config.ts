@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 // Lokalno čitamo ignorisani root .env; Render vrijednosti iz okruženja imaju prednost.
 config({ path: resolve(__dirname, "../../../.env"), quiet: true });
 
-export type EmailMode = "local" | "smtp" | "resend" | "disabled";
+export type EmailMode = "local" | "smtp" | "resend" | "ses" | "disabled";
 
 /** Bira izričito podešen način dostave; nepoznata vrijednost nikad ne uključuje lokalni email u produkciji. */
 export function configuredEmailMode(): EmailMode {
@@ -13,12 +13,13 @@ export function configuredEmailMode(): EmailMode {
     mode === "local" ||
     mode === "smtp" ||
     mode === "resend" ||
+    mode === "ses" ||
     mode === "disabled"
   ) {
     return mode;
   }
   throw new Error(
-    "AUTH_EMAIL_MODE mora biti local, smtp, resend ili disabled.",
+    "AUTH_EMAIL_MODE mora biti local, smtp, resend, ses ili disabled.",
   );
 }
 
@@ -60,7 +61,7 @@ export function validateConfiguration() {
   if (process.env.NODE_ENV === "production") {
     if (emailMode === "local") {
       throw new Error(
-        "Produkcija zahtijeva AUTH_EMAIL_MODE=resend, smtp ili izričito disabled; lokalni Mailpit nije dostupan.",
+        "Produkcija zahtijeva AUTH_EMAIL_MODE=ses, resend, smtp ili izričito disabled; lokalni Mailpit nije dostupan.",
       );
     }
     if (!process.env.WEB_ORIGINS?.trim()) {
@@ -78,6 +79,30 @@ export function validateConfiguration() {
           "WEB_ORIGINS mora sadržati HTTPS origin bez putanje, završne kose crte ili pristupnih podataka.",
         );
       }
+    }
+  }
+  if (emailMode === "ses") {
+    for (const name of [
+      "AWS_REGION",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "SES_FROM",
+      "SES_FEEDBACK_EMAIL",
+    ]) {
+      if (!process.env[name]?.trim()) {
+        throw new Error(`Amazon SES zahtijeva ${name}.`);
+      }
+    }
+    if (!/^[a-z]{2}(?:-[a-z]+)+-\d+$/.test(process.env.AWS_REGION!)) {
+      throw new Error("AWS_REGION mora biti naziv regiona, npr. eu-central-1.");
+    }
+    // Povratne poruke moraju ići na stvarno nadgledano sanduče, a ne na noreply adresu bez prijema.
+    if (
+      !/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(process.env.SES_FEEDBACK_EMAIL!)
+    ) {
+      throw new Error(
+        "SES_FEEDBACK_EMAIL mora biti email adresa za obavještenja o nedostavljenim porukama.",
+      );
     }
   }
   apiListenAddress();

@@ -263,6 +263,7 @@ test(
         for (const [code, expected] of [
           ["EAUTH", "SMTP_AUTH_FAILED"],
           ["ECONNECTION", "SMTP_CONNECTION_FAILED"],
+          ["SES_SEND_FAILED", "SES_SEND_FAILED"],
         ]) {
           failureCode = code;
           await database.pool.query(
@@ -280,7 +281,7 @@ test(
         );
         await secondWorker.processPending();
         row = (await rowsFor(booking.id))[0];
-        assert.equal(row.attempts, 4);
+        assert.equal(row.attempts, 5);
         assert.ok(row.sent_at);
         assert.equal(row.last_error, null);
         assert.equal(messages.at(-1)!.id, row.id);

@@ -30,6 +30,8 @@ Isti SMTP sada šalje i obavještenja o zahtjevima i odgovorima na termine. Njih
 
 ## Stvarna dostava preko Resend-a
 
+Alternativa je Amazon SES preko HTTPS-a: `AUTH_EMAIL_MODE=ses`, `AWS_REGION`, ograničeni IAM ključevi, `SES_FROM` i potvrđeni `SES_FEEDBACK_EMAIL`. Vodič [aws-ses.md](aws-ses.md) objašnjava AWS nalog, domen koji može ostati na Base44, sandbox primaoce, povratne poruke i Render podešavanja. Isti servis šalje kodove, reset i booking poruke; javna registracija i dalje zahtijeva potvrdu emaila.
+
 1. Napravite nalog na [Resend-u](https://resend.com).
 2. U **Domains** dodajte domen kojim upravljate. U DNS provajderu upišite tačne zapise koje Resend prikaže i sačekajte potvrdu domena. Može se koristiti poddomen za slanje.
 3. Kreirajte API ključ sa dozvolom za slanje na tom domenu.

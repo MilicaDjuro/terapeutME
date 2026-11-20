@@ -1,5 +1,12 @@
 # Provjera početne verzije
 
+## Amazon SES priprema — 19. novembar 2026.
+
+- Dodata je HTTPS SES v2 dostava za registraciju, reset i booking outbox, UTF-8 sadržaj, povratno sanduče i opcioni configuration set. SDK ima jedan pokušaj, rok je 15 sekundi i uspjeh traži `MessageId`. Provider poruke i tajne se ne loguju.
+- Prolaze `npm.cmd run typecheck`, `npm.cmd test` i `npm.cmd run build`. Svih **115 domenskih/API provjera** prolazi bez preskakanja: 26 domenskih i 89 API. SES testovi presreću SDK komandu, provjeravaju sve vrste poruka, odbijanje, timeout, nedostajući ID, zatvaranje klijenta i očuvanje bezbjednog koda u outbox-u; ne šalju stvarne emailove.
+- AWS nalog, DNS verifikacija, ključevi i stvarna SES dostava još nijesu podešeni niti potvrđeni. Produkcija ostaje u `disabled` režimu. Vodič i ograničenje mogućih duplikata pri izgubljenom SES odgovoru su u [aws-ses.md](aws-ses.md).
+- U Edge-u prolazi **5/5 browser scenarija** sa stvarnim lokalnim Mailpit-om: klijentska i terapeutska registracija, mobilni/engleski prikaz, booking obavještenja i reset obje uloge. Testovi koriste izolovanu šemu. `npm.cmd run format:check` prolazi; generisani `next-env.d.ts` vraćen je na prethodno praćeno stanje.
+
 ## Render Free, privremeno isključen email i Resend HTTPS
 
 - `render.yaml` koristi Free API/bazu bez pre-deploy komande. `start:render` prvo izvršava migracije, pa otvara API. Migrator drži PostgreSQL session lock na jednoj konekciji, pa dva konkurentna starta ne ponavljaju SQL korake. Postojeći podaci i demo granice ostaju sačuvani.

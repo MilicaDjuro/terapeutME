@@ -61,7 +61,9 @@ Druga mogućnost je **New → Blueprint** i izbor `render.yaml`: traži `DATABAS
 
 Render automatski zadaje `PORT`; API ga koristi i sluša na `0.0.0.0`. API pristupa Neon-u preko TLS veze; Render podešavanja za internu bazu i `ipAllowList` ovdje se ne koriste. Fotografije, PDF materijali, istorija i outbox su u bazi; persistent disk nije potreban.
 
-## 3. Naknadno uključivanje Resend-a
+## 3. Naknadno uključivanje emaila
+
+Za Amazon SES koristite `AUTH_EMAIL_MODE=ses`, `AWS_REGION`, ograničene IAM ključeve, `SES_FROM` i potvrđeni `SES_FEEDBACK_EMAIL`. Nalog, domen koji može ostati na Base44, IAM politika i sandbox provjera opisani su u [aws-ses.md](aws-ses.md). SES podrška mora prvo biti deploy-ovana. Povratne bounce/complaint poruke se prate u podešenom sandučetu; aplikacija nema automatski SNS webhook.
 
 Free blokira uobičajene SMTP portove. Resend zato koristimo preko **HTTPS API-ja**, bez dodatne biblioteke i bez SMTP podešavanja. Kada verifikujete domen i pripremite ključ, promijenite:
 

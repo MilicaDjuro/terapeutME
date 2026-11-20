@@ -36,7 +36,7 @@ export interface TherapistAccountProfile {
   }[];
 }
 
-export type EmailDelivery = "smtp" | "local" | "resend" | "disabled";
+export type EmailDelivery = "smtp" | "local" | "resend" | "ses" | "disabled";
 
 export interface AuthResponse {
   user?: AccountUser;

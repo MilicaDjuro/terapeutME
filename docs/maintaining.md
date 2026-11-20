@@ -206,6 +206,8 @@ Zapisi koji počinju sa `@` nazivaju se dekoratori. Oni NestJS-u govore na kojoj
 
 ## Baza i konfiguracija
 
+Amazon SES dostava koristi `AUTH_EMAIL_MODE=ses` i zvanični `@aws-sdk/client-sesv2`, sa jednim pokušajem i rokom od 15 sekundi. Kodove, reset i booking emailove i dalje šalje isti `EmailService`; outbox upravlja retry-jem, a `SES_SEND_FAILED` je bezbjedna dijagnostika. SES `MessageId` potvrđuje prihvatanje poruke, ne dostavu. Podešavanje AWS naloga, DNS-a, ograničenog IAM korisnika i povratnog sandučeta je u [aws-ses.md](aws-ses.md). U početnom podešavanju povratne poruke prati operator; aplikacija nema SNS webhook.
+
 `compose.yaml` pokreće lokalni PostgreSQL na portu 5432. `db/schema.sql` pravi početne tabele kada Docker kreira **novu** bazu ili kada `npm.cmd run db:migrate` pronađe praznu šemu. Postojeće tabele i podaci se ne resetuju; izmjena SQL fajla ne mijenja već postojeću bazu, za to treba nova migracija.
 
 Free hosting je opisan korak po korak u [deployment.md](deployment.md). `render.yaml` priprema besplatni NestJS servis sa ručno unesenom Neon `DATABASE_URL`; `start:render` prvo pokreće migracije, pa API, bez demo uvoza. Jedna migraciona konekcija drži session lock da dva starta ne izvrše isti korak zajedno. Neon Free ima ograničenja prostora i potrošnje, a uspavan Render API odlaže pozadinske poslove. Neon veza mora biti direktna zbog session lock-ova; koraci su u [neon.md](neon.md). `apps/web/vercel.json` gradi frontend i zajednički paket iz monorepo korijena. `next.config.ts` provjerava `API_ORIGIN` i prosljeđuje `/api/v1` pozive Renderu. Kolačić ostaje na frontend adresi; tajne baze i emaila postoje samo na API-ju.

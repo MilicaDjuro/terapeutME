@@ -32,7 +32,7 @@ interface PendingBookingEmail {
   attempts: number;
 }
 
-/** Čuva obavještenje uz rezervaciju i naknadno šalje SMTP poruke iz trajnog reda. */
+/** Čuva obavještenje uz rezervaciju i naknadno šalje poruke iz trajnog reda preko izabranog email servisa. */
 @Injectable()
 export class BookingNotificationService
   implements OnModuleInit, OnModuleDestroy
@@ -42,7 +42,7 @@ export class BookingNotificationService
   private currentBatch: Promise<void> | null = null;
   private stopping = false;
 
-  /** Dijeli postojeću bazu i SMTP; browser ne bira primaoca ni tekst emaila. */
+  /** Dijeli postojeću bazu i email servis; browser ne bira primaoca ni tekst poruke. */
   constructor(
     @Inject(DatabaseService) private readonly database: DatabaseService,
     @Inject(EmailService) private readonly email: EmailService,
@@ -229,10 +229,11 @@ export class BookingNotificationService
     );
   }
 
-  /** Prevodi samo poznate SMTP kodove u dijagnostiku; sirova greška može sadržati privatne podatke. */
+  /** Prevodi poznate email kodove u dijagnostiku; sirova greška može sadržati privatne podatke. */
   private emailFailureCode(failure: unknown): string {
     if (failure && typeof failure === "object" && "code" in failure) {
       if (failure.code === "RESEND_SEND_FAILED") return "RESEND_SEND_FAILED";
+      if (failure.code === "SES_SEND_FAILED") return "SES_SEND_FAILED";
       if (failure.code === "EAUTH") return "SMTP_AUTH_FAILED";
       if (
         ["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EDNS"].includes(

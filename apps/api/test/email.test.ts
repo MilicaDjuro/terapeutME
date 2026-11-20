@@ -5,6 +5,7 @@ import { AuthService } from "../src/auth/auth.service";
 import { PasswordResetService } from "../src/auth/password-reset.service";
 import { BookingNotificationService } from "../src/notifications/booking-notification.service";
 import type { DatabaseService } from "../src/database.service";
+import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 
 let originalEnvironment: NodeJS.ProcessEnv;
 
@@ -187,4 +188,119 @@ test("disabled ne šalje email, ne čuva registraciju/reset i ne obrađuje outbo
   await new BookingNotificationService(database, email).processPending();
   assert.equal(databaseCalls, 0);
   assert.equal(networkCalls, 0);
+});
+
+test("SES šalje kod, reset i booking HTTPS komandom sa UTF-8 sadržajem i povratnom adresom", async (context) => {
+  process.env.AUTH_EMAIL_MODE = "ses";
+  process.env.AWS_REGION = "eu-central-1";
+  process.env.AWS_ACCESS_KEY_ID = "test-key-never-sent";
+  process.env.AWS_SECRET_ACCESS_KEY = "test-secret-never-sent";
+  process.env.SES_FROM = "Terapeut.me <obavjestenja@mail.example.invalid>";
+  process.env.SES_FEEDBACK_EMAIL = "operator@example.invalid";
+  process.env.SES_CONFIGURATION_SET = "terapeut-transactional";
+  const requests: SendEmailCommand[] = [];
+  context.mock.method(
+    SESv2Client.prototype,
+    "send",
+    async function (
+      this: SESv2Client,
+      command: SendEmailCommand,
+      options: { abortSignal: AbortSignal },
+    ) {
+      requests.push(command);
+      assert.ok(options.abortSignal instanceof AbortSignal);
+      assert.equal(await this.config.region(), "eu-central-1");
+      assert.equal(await this.config.maxAttempts(), 1);
+      return { MessageId: "ses-test-message-id" };
+    },
+  );
+  let closed = 0;
+  context.mock.method(SESv2Client.prototype, "destroy", () => {
+    closed += 1;
+  });
+  const email = new EmailService();
+  await email.sendRegistrationCode("client@example.invalid", "1234");
+  await email.sendPasswordResetLink(
+    "client@example.invalid",
+    "https://example.invalid/reset-password#token=test",
+  );
+  await email.sendBookingNotification(
+    "client@example.invalid",
+    "Potvrda",
+    "Testni termin",
+    "outbox-test-id",
+  );
+  assert.equal(requests.length, 3);
+  for (const command of requests) {
+    assert.ok(command instanceof SendEmailCommand);
+    assert.equal(command.input.FromEmailAddress, process.env.SES_FROM);
+    assert.deepEqual(command.input.Destination?.ToAddresses, [
+      "client@example.invalid",
+    ]);
+    assert.equal(
+      command.input.FeedbackForwardingEmailAddress,
+      process.env.SES_FEEDBACK_EMAIL,
+    );
+    assert.equal(command.input.ConfigurationSetName, "terapeut-transactional");
+    assert.equal(command.input.Content?.Simple?.Subject?.Charset, "UTF-8");
+    assert.equal(command.input.Content?.Simple?.Body?.Text?.Charset, "UTF-8");
+  }
+  assert.match(requests[0].input.Content!.Simple!.Body!.Text!.Data!, /1234/);
+  assert.match(
+    requests[1].input.Content!.Simple!.Body!.Text!.Data!,
+    /reset-password#token=test/,
+  );
+  assert.equal(requests[0].input.EmailTags, undefined);
+  assert.deepEqual(requests[2].input.EmailTags, [
+    { Name: "outbox_id", Value: "outbox-test-id" },
+  ]);
+  email.onModuleDestroy();
+  assert.equal(closed, 1);
+});
+
+test("SES odbijanje, timeout ili nedostajući MessageId ostaju neuspjeh bez privatnih detalja", async (context) => {
+  process.env.AUTH_EMAIL_MODE = "ses";
+  process.env.AWS_REGION = "eu-central-1";
+  process.env.AWS_ACCESS_KEY_ID = "test-key-never-sent";
+  process.env.AWS_SECRET_ACCESS_KEY = "test-secret-never-sent";
+  process.env.SES_FROM = "sender@example.invalid";
+  process.env.SES_FEEDBACK_EMAIL = "operator@example.invalid";
+  const replies = [
+    () => {
+      throw Object.assign(new Error("private-aws-details"), {
+        name: "MessageRejected",
+      });
+    },
+    () => {
+      throw Object.assign(new Error("private-aws-details"), {
+        name: "TooManyRequestsException",
+      });
+    },
+    () => {
+      throw new DOMException("private-aws-details", "AbortError");
+    },
+    () => ({}),
+    () => ({ MessageId: "  " }),
+  ];
+  let replyIndex = 0;
+  context.mock.method(SESv2Client.prototype, "send", async () =>
+    replies[replyIndex](),
+  );
+  const email = new EmailService();
+  try {
+    for (replyIndex = 0; replyIndex < replies.length; replyIndex++) {
+      await assert.rejects(
+        email.sendRegistrationCode("client@example.invalid", "1234"),
+        (failure: unknown) => {
+          assert.ok(failure instanceof Error && "code" in failure);
+          assert.equal(failure.code, "SES_SEND_FAILED");
+          assert.equal(failure.message.includes("private-aws-details"), false);
+          assert.equal(failure.message.includes("1234"), false);
+          return true;
+        },
+      );
+    }
+  } finally {
+    email.onModuleDestroy();
+  }
 });

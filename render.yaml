@@ -1,5 +1,5 @@
 # Render Free API za početno testiranje; PostgreSQL se zasebno kreira na Neon Free.
-# Email je izričito isključen dok se naknadno ne uključi Resend HTTPS dostava.
+# Email je isključen dok se ne podesi SES ili Resend HTTPS dostava prema docs/aws-ses.md i docs/auth.md.
 services:
   - type: web
     name: terapeut-api

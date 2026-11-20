@@ -251,6 +251,7 @@ export function RegistrationPage({
       setChallengeId(saved.challengeId);
       setEmail(saved.email);
       if (saved.delivery === "resend") setDelivery("resend");
+      else if (saved.delivery === "ses") setDelivery("ses");
       else setDelivery(saved.delivery === "local" ? "local" : "smtp");
       setResendSeconds(
         Math.max(0, Math.ceil((saved.resendAt - Date.now()) / 1000)),

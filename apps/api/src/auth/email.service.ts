@@ -1,11 +1,29 @@
-import { Injectable, ServiceUnavailableException } from "@nestjs/common";
+import {
+  Injectable,
+  OnModuleDestroy,
+  ServiceUnavailableException,
+} from "@nestjs/common";
+import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import nodemailer from "nodemailer";
 import { configuredEmailMode } from "../config";
 
-/** Dijeli jednu dostavu za kodove, reset i outbox; Resend koristi HTTPS, a Mailpit samo lokalni SMTP. */
+/** Dijeli dostavu za kodove, reset i outbox; SES/Resend koriste HTTPS, a Mailpit samo lokalni SMTP. */
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleDestroy {
   readonly mode = configuredEmailMode();
+  private readonly sesClient =
+    this.mode === "ses"
+      ? new SESv2Client({
+          region: process.env.AWS_REGION,
+          // Outbox već upravlja ponovnim pokušajima. SDK ne ponavlja neizvjesno prihvaćen SendEmail.
+          maxAttempts: 1,
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+            sessionToken: process.env.AWS_SESSION_TOKEN || undefined,
+          },
+        })
+      : undefined;
   private readonly transporter =
     this.mode === "local" || this.mode === "smtp"
       ? nodemailer.createTransport({
@@ -22,6 +40,11 @@ export class EmailService {
         })
       : undefined;
 
+  /** Zatvara HTTPS konekcije AWS klijenta pri gašenju API-ja. */
+  onModuleDestroy() {
+    this.sesClient?.destroy();
+  }
+
   /** Zaustavlja email radnju prije čuvanja privremenih podataka; nikad ne prikazuje lažno uspješno slanje. */
   assertDeliveryEnabled() {
     if (this.mode === "disabled") {
@@ -31,7 +54,7 @@ export class EmailService {
     }
   }
 
-  /** Šalje jednu tekstualnu poruku; samo outbox dobija stabilan Resend ključ protiv duplikata. */
+  /** Šalje jednu poruku; outbox dobija stabilnu oznaku, ali samo Resend podržava naš ključ protiv duplikata. */
   private async sendMessage(
     email: string,
     subject: string,
@@ -39,6 +62,39 @@ export class EmailService {
     outboxId?: string,
   ) {
     this.assertDeliveryEnabled();
+    if (this.mode === "ses") {
+      try {
+        if (!this.sesClient) throw new Error("SES klijent nije podešen.");
+        const response = await this.sesClient.send(
+          new SendEmailCommand({
+            FromEmailAddress: process.env.SES_FROM,
+            Destination: { ToAddresses: [email] },
+            Content: {
+              Simple: {
+                Subject: { Data: subject, Charset: "UTF-8" },
+                Body: { Text: { Data: text, Charset: "UTF-8" } },
+              },
+            },
+            FeedbackForwardingEmailAddress: process.env.SES_FEEDBACK_EMAIL,
+            ConfigurationSetName:
+              process.env.SES_CONFIGURATION_SET?.trim() || undefined,
+            EmailTags: outboxId
+              ? [{ Name: "outbox_id", Value: outboxId }]
+              : undefined,
+          }),
+          { abortSignal: AbortSignal.timeout(15000) },
+        );
+        if (!response.MessageId?.trim())
+          throw new Error("SES nije potvrdio prihvatanje poruke.");
+      } catch {
+        // SDK greška može sadržati kontakt, sadržaj ili AWS detalje. U log/outbox ide samo bezbjedna oznaka.
+        throw Object.assign(
+          new Error("Amazon SES dostava trenutno nije uspjela."),
+          { code: "SES_SEND_FAILED" },
+        );
+      }
+      return;
+    }
     if (this.mode === "resend") {
       try {
         const headers: Record<string, string> = {
@@ -92,7 +148,7 @@ export class EmailService {
     }
   }
 
-  /** Šalje obavještenje iz outbox-a; isti ID poruke ostaje i pri ponovnom pokušaju. */
+  /** Šalje outbox obavještenje sa istom oznakom pri retry-ju; SES oznaka ne garantuje uklanjanje duplikata. */
   async sendBookingNotification(
     email: string,
     subject: string,

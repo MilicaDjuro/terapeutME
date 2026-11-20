@@ -1,5 +1,7 @@
 # Email obavještenja o terminima
 
+Amazon SES je podržan kroz `AUTH_EMAIL_MODE=ses`; AWS nalog, IAM i povratno sanduče opisani su u [aws-ses.md](aws-ses.md). Outbox čuva `SES_SEND_FAILED` i ponavlja po postojećem rasporedu. SES oznaka `outbox_id` služi za praćenje, ali nema Resend idempotency garanciju: izgubljen odgovor nakon prihvatanja poruke može dovesti do duplikata pri retry-ju. `sent_at` znači prihvatanje kod provajdera; kasnije bounce/complaint događaje za sada prati operator, bez automatskog SNS webhook-a.
+
 Na Render Free koristi se `AUTH_EMAIL_MODE=resend` i Resend HTTPS API; lokalni razvoj zadržava Mailpit/SMTP. U privremenom `disabled` režimu red se upisuje uz rezervaciju, ali worker ne šalje poruke niti mijenja pokušaje ili `sent_at`. Kada se dostava uključi, ponovo provjerava aktuelno stanje i primaoca. Resend koristi `Idempotency-Key: booking/<outbox-id>` za retry u okviru provajderovog roka od 24 sata; outbox ostaje trajni izvor stanja. Detalji su u [auth.md](auth.md) i [deployment.md](deployment.md).
 
 Zahtjevi, termini i istorija ostaju u aplikaciji i PostgreSQL-u. Email je dodatno obavještenje sa linkom ka istom zahtjevu, bez automatske prijave ili promjene statusa klikom na email.

@@ -8,6 +8,8 @@ Ako tek upoznajete Next.js i NestJS, počnite od [vodiča za čitanje i održava
 
 Za objavljivanje frontenda na Vercelu i API-ja/baze na Renderu pratite [vodič za deploy](docs/deployment.md). Repo sadrži `render.yaml` i `apps/web/vercel.json`; vodič navodi vrijednosti koje treba unijeti u dashboardima.
 
+Za email preko Amazon SES-a pratite [AWS vodič](docs/aws-ses.md): AWS nalog, domen/DNS, ograničeni IAM pristup, sandbox provjera i povezivanje sa Renderom. HTTPS SES dostava radi kroz isti servis kao registracija, obnova lozinke i booking outbox.
+
 Potrebni su Node.js 22.12+ i npm. Na Windowsu koristite `npm.cmd` ako PowerShell ne dozvoljava `npm.ps1`.
 
 ```powershell

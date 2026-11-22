@@ -31,6 +31,166 @@ test.afterAll(async () => {
   await database.end();
 });
 
+test(
+  "waiting room stays outside Daily until both are ready and the therapist starts",
+  { skip: process.env.AUTH_E2E_LOBBY !== "1" },
+  async ({ page, browser }, testInfo) => {
+    test.setTimeout(120000);
+    const data = await fixture();
+    const clientContext = await browser.newContext({
+      baseURL: "http://127.0.0.1:3200",
+      permissions: ["camera", "microphone"],
+    });
+    const client = await clientContext.newPage();
+    let dailyRequests = 0;
+    let joinRequests = 0;
+    let clientPresence = "";
+    for (const participant of [page, client]) {
+      participant.on("request", (request) => {
+        if (new URL(request.url()).hostname.endsWith(".daily.co"))
+          dailyRequests += 1;
+        if (participant === client && request.url().endsWith("/lobby/ready"))
+          clientPresence = request.postDataJSON().presenceId;
+      });
+      // Video poziv ovdje namjerno ne pokrećemo: provjeravamo trenutak kad UI prvi put zatraži pristup.
+      await participant.route(
+        `**/api/v1/bookings/${data.bookingId}/online-session/join`,
+        async (route) => {
+          joinRequests += 1;
+          await route.fulfill({
+            status: 503,
+            contentType: "application/json",
+            body: JSON.stringify({
+              message: "Test povezivanja je zaustavljen prije video servisa.",
+            }),
+          });
+        },
+      );
+    }
+    try {
+      await signIn(page, data.emails[0], true);
+      await signIn(client, data.emails[1]);
+      await page.goto(`/session/${data.bookingId}`);
+      await client.goto(`/session/${data.bookingId}`);
+      await client
+        .getByRole("button", {
+          name: "Provjeri kameru i mikrofon",
+          exact: true,
+        })
+        .click();
+      await expect(client.locator(".session-video-tile video")).toBeVisible();
+      await page
+        .getByRole("button", { name: "Spreman/na sam", exact: true })
+        .click();
+      const start = page.getByRole("button", {
+        name: "Pokreni razgovor",
+        exact: true,
+      });
+      await expect(start).toBeDisabled();
+      await client
+        .getByRole("button", { name: "Spreman/na sam", exact: true })
+        .click();
+      await expect(start).toBeEnabled();
+      await expect(
+        client.getByRole("button", { name: "Pokreni razgovor", exact: true }),
+      ).toHaveCount(0);
+      await expect(client.locator(".session-connection-status")).toHaveText(
+        "U čekaonici",
+      );
+      const before = (
+        await database.query(
+          "SELECT client_ready_at FROM online_session_lobbies WHERE booking_id=$1",
+          [data.bookingId],
+        )
+      ).rows[0].client_ready_at.getTime();
+      await expect
+        .poll(async () =>
+          (
+            await database.query(
+              "SELECT client_ready_at FROM online_session_lobbies WHERE booking_id=$1",
+              [data.bookingId],
+            )
+          ).rows[0].client_ready_at.getTime(),
+        )
+        .toBeGreaterThan(before);
+      expect(dailyRequests).toBe(0);
+      expect(joinRequests).toBe(0);
+      expect(
+        (
+          await database.query(
+            "SELECT count(*)::int AS count FROM online_session_rooms WHERE booking_id=$1",
+            [data.bookingId],
+          )
+        ).rows[0].count,
+      ).toBe(0);
+      const info = await (
+        await client.request.get(
+          `/api/v1/bookings/${data.bookingId}/online-session`,
+        )
+      ).json();
+      expect(info.canWait).toBe(true);
+      expect(info.canJoin).toBe(false);
+      expect(
+        (
+          await client.request.post(
+            `/api/v1/bookings/${data.bookingId}/online-session/lobby/start`,
+            {
+              headers: { Origin: "http://127.0.0.1:3200" },
+              data: { presenceId: clientPresence },
+            },
+          )
+        ).status(),
+      ).toBe(403);
+      // Direknim API zahtjevom potvrđujemo da sakriveno dugme nije jedina zaštita.
+      const direct = await client.request.post(
+        `http://127.0.0.1:4100/api/v1/bookings/${data.bookingId}/online-session/join`,
+        {
+          headers: { Origin: "http://127.0.0.1:3200" },
+          data: { presenceId: clientPresence, lobbyId: info.lobby.id },
+        },
+      );
+      expect(direct.status()).toBe(409);
+      await page.screenshot({
+        path: testInfo.outputPath("waiting-room-desktop.png"),
+        fullPage: true,
+      });
+      await client.setViewportSize({ width: 390, height: 844 });
+      expect(
+        await client.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await client.screenshot({
+        path: testInfo.outputPath("waiting-room-mobile.png"),
+        fullPage: true,
+      });
+      await start.click();
+      await expect.poll(() => joinRequests).toBe(2);
+      expect(dailyRequests).toBe(0);
+      await expect(client.locator(".form-error[role=alert]")).toContainText(
+        "Test povezivanja je zaustavljen",
+      );
+      await client
+        .getByRole("button", { name: "Napusti čekaonicu", exact: true })
+        .click();
+      await expect(start).toBeDisabled();
+      await expect(
+        client.getByRole("button", { name: "Spreman/na sam", exact: true }),
+      ).toBeVisible();
+      expect(
+        (
+          await database.query(
+            "SELECT count(*)::int AS count FROM online_session_rooms WHERE booking_id=$1",
+            [data.bookingId],
+          )
+        ).rows[0].count,
+      ).toBe(0);
+    } finally {
+      await clientContext.close();
+    }
+  },
+);
+
 /** Pravi izolovane učesnike, online rezervaciju i slobodno radno vrijeme za test izbora usluge. */
 async function fixture() {
   const userIds: string[] = [];
@@ -182,7 +342,7 @@ test("online service selection persists while existing booking keeps its modalit
       }),
     ).toBeVisible();
     await expect(
-      client.getByRole("button", { name: "Pridruži se seansi", exact: true }),
+      client.getByRole("button", { name: "Spreman/na sam", exact: true }),
     ).toBeDisabled();
     await expect(
       client.getByText(
@@ -320,7 +480,13 @@ test("blocked media and failed join show honest errors without claiming a connec
       const info = await response.json();
       await route.fulfill({
         response,
-        json: { ...info, configured: true, canJoin: true, reason: "" },
+        json: {
+          ...info,
+          configured: true,
+          canWait: true,
+          canJoin: false,
+          reason: "",
+        },
       });
     },
   );
@@ -332,11 +498,14 @@ test("blocked media and failed join show honest errors without claiming a connec
     "Kamera ili mikrofon nijesu dostupni.",
   );
   await page
-    .getByRole("button", { name: "Pridruži se seansi", exact: true })
+    .getByRole("button", { name: "Spreman/na sam", exact: true })
     .click();
-  await expect(page.locator(".form-error[role=alert]")).toHaveText(
-    "Online pozivi još nijesu uključeni. Kontaktirajte terapeuta.",
-  );
+  await expect(
+    page.getByText(
+      "Online pozivi još nijesu uključeni. Kontaktirajte terapeuta.",
+      { exact: true },
+    ),
+  ).toBeVisible();
   await expect(page.locator(".session-connection-status")).toHaveText(
     "Priprema za razgovor",
   );

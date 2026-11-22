@@ -1,5 +1,37 @@
 # Vercel frontend i Render Free API
 
+## Postojeća javna testna verzija — 22. novembar 2026.
+
+Korisnik je izabrao prvo objavu na **terapeut-me.vercel.app**. Postojeći **terapeut.me na Base44 ostaje aktivan**: za ovu objavu nema izmjene njegovog DNS-a, nameservera ili email zapisa.
+
+1. Commitujte i pošaljite završene izmjene na GitHub, uključujući `online-lobby.service.ts` i migraciju `017-online-lobby.sql`. Lokalna kopija koristi repozitorijum **MilicaDjuro/terapeutME**, granu `main`. U Git podešavanjima oba hosting projekta provjerite da su povezani baš sa repozitorijumom/granom na kojima se nalazi novi kod. Stariji deploy je ranije koristio drugi repozitorijum; push u nepovezanu kopiju neće ažurirati javni sajt. `.env` i `.local` ostaju ignorisani i ne šalju se u Git.
+2. Na **Render → terapeut-api → Environment** podesite:
+
+   ```dotenv
+   ONLINE_SESSIONS_PROVIDER=daily
+   DAILY_DOMAIN=terapeutme
+   DAILY_API_KEY=stvarni-kljuc-iz-vaseg-Daily-naloga
+   WEB_ORIGINS=https://terapeut-me.vercel.app
+   ```
+
+   Sačuvajte postojeće `DATABASE_URL` i `AUTH_SECRET`: Neon veza mora biti direktna sa TLS-om. Nemojte kopirati cijeli lokalni `.env`, jer on upućuje na lokalni Docker i Mailpit. Ključ je za unos dostupan lokalno u `.local/daily-api-key.txt`; ne šaljite ga u chat ili frontend varijable. Email može ostati `AUTH_EMAIL_MODE=disabled` tokom probe sa unaprijed kreiranim testnim nalozima. Javna registracija/obnova lozinke zahtijevaju posebno podešen email servis.
+
+3. U **Render → Settings** ostaju Build `npm ci --include=dev && npm run build:api`, Start `npm run start:render`, Health `/api/v1/health`. Pokrenite deploy novog koda i sačekajte **Live**. Start komanda primjenjuje nedostajuće migracije prije API-ja, uključujući čekaonicu; nije potreban plaćeni Pre-Deploy Command. Objavu čekaonice planirajte bez aktivnih video razgovora.
+4. Na **Vercel → terapeut-me** provjerite Next.js, Root Directory `apps/web`, podrazumijevani Output Directory i Production varijablu:
+
+   ```dotenv
+   API_ORIGIN=https://terapeut-api.onrender.com
+   ```
+
+   Komande su već u `apps/web/vercel.json`; ne postavljajte izlaz na `public`. Poslije izmjene varijable ili koda pokrenite novi deployment i sačekajte **Ready**. Daily ključ, `DATABASE_URL` i `AUTH_SECRET` pripadaju samo Render API-ju.
+
+5. Testni klijent **demo.milica@example.tes** je kreiran u lokalnoj bazi, sa izričito traženom testnom lozinkom. Adresa se završava sa `.tes`, tačno prema zahtjevu. Za javnu testnu bazu otvorite svoj Neon projekat i SQL Editor, pa pokrenite privatni fajl `.local/demo-milica-neon.sql`. Fajl čuva hash, ne izvornu lozinku, i ne mijenja postojeće naloge. Ne uvozite cijelu lokalnu bazu da biste dodali ovaj jedan nalog. Ovo je ručni demo unos; javna registracija zadržava svoje pravilo dužine lozinke i potvrdu emaila.
+6. Provjerite **https://terapeut-api.onrender.com/api/v1/health** i **https://terapeut-me.vercel.app/api/v1/health**. Očekuje se `status: ok`, `database: connected`, `onlineSessions: daily`. Zatim se prijavite testnim klijentom na Vercelu i ponovite tok: nova online rezervacija → potvrda terapeuta → oba učesnika spremna u čekaonici → terapeut pokreće razgovor. Javni HTTPS link omogućava probu i sa dva fizička uređaja.
+
+Ovi koraci su uputstvo za objavu, a ne zapis da je nova verzija već postavljena. Lokalni Milicin nalog je provjeren prijavom i otvaranjem stranice naloga; njegov unos u Neon i hosting deploy ostaju zasebni koraci.
+
+## Opšti postupak za novu instalaciju
+
 Frontend (`apps/web`) ide na Vercel. NestJS API ide na Render Free, a PostgreSQL na Neon Free. Izaberite Frankfurt za oba servisa. Sve komande u nastavku su za Render/Vercel Linux okruženje; lokalno na Windowsu koristite `npm.cmd`.
 
 ```text
@@ -83,7 +115,7 @@ Lokalni `AUTH_EMAIL_MODE=local` i Mailpit ostaju za razvoj i browser testove. Re
 
 `npm run start:render` izvršava `node apps/api/dist/migrate.js && npm run start:api`. Migraciona greška zaustavlja start; API ne kreće sa neispravnom šemom. Običan lokalni `start:api` ne pokreće migracije.
 
-`migrate.ts` drži jednu PostgreSQL konekciju i session advisory lock za trenutnu šemu, tako da konkurentni startovi sačekaju isti lock. Po zatvaranju konekcije lock se oslobađa i poslije greške. Samo praznoj šemi dodaje `db/schema.sql`, zatim izvršava neevidentirane migracije 002–015. Evidentirane migracije preskače pri narednom restartu. Podaci i istorija se ne brišu.
+`migrate.ts` drži jednu PostgreSQL konekciju i session advisory lock za trenutnu šemu, tako da konkurentni startovi sačekaju isti lock. Po zatvaranju konekcije lock se oslobađa i poslije greške. Samo praznoj šemi dodaje `db/schema.sql`, zatim izvršava neevidentirane migracije 002–017. Evidentirane migracije preskače pri narednom restartu. Podaci i istorija se ne brišu.
 
 Za Daily pozive pogledajte [online-sessions.md](online-sessions.md). Bez naloga zadržite `ONLINE_SESSIONS_PROVIDER=disabled`. Nakon kreiranja naloga na Renderu se podešavaju `ONLINE_SESSIONS_PROVIDER=daily`, `DAILY_DOMAIN` i tajni `DAILY_API_KEY`; Vercelu ključ nije potreban. Migracija 015 dodaje način rada i privatne tehničke oznake soba, bez prepravljanja postojećih termina. Aktivan poziv ima vlastiti istek i kada Render Free zaspi; prekid otkazanog poziva preko radnika zavisi od dostupnosti API-ja i Daily-ja.
 
@@ -131,3 +163,5 @@ Trenutno ograničenje autentifikacije: pokušaji se ograničavaju po socket adre
 - [Neon povezivanje](https://neon.com/docs/connect/connect-from-any-app)
 - [Neon direktne i pooled veze](https://neon.com/docs/connect/connection-pooling)
 - [Vercel monorepo podešavanja](https://vercel.com/docs/monorepos/monorepo-faq)
+
+Za čekanje prije video poziva obavezna je i migracija **017-online-lobby**. Prije terapeutovog početka oba učesnika koriste našu čekaonicu, bez Daily tokena ili učesničkih minuta. Nova verzija backend-a i frontend-a objavljuju se zajedno; stari frontend sa praznim `/join` zahtjevom više nema video pristup.

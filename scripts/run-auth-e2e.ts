@@ -119,6 +119,9 @@ async function runAuthBrowserTests() {
     await isolated.query(
       await readFile(resolve("db/migrations/015-online-sessions.sql"), "utf8"),
     );
+    await isolated.query(
+      await readFile(resolve("db/migrations/017-online-lobby.sql"), "utf8"),
+    );
     apiProcess = spawn(process.execPath, [resolve("apps/api/dist/main.js")], {
       stdio: "inherit",
       windowsHide: true,
@@ -130,7 +133,10 @@ async function runAuthBrowserTests() {
         WEB_ORIGINS: "http://127.0.0.1:3200",
         AUTH_EMAIL_MODE: "local",
         // Browser provjere nikad ne koriste stvarni Daily nalog ili troše njegove minute.
-        ONLINE_SESSIONS_PROVIDER: "disabled",
+        ONLINE_SESSIONS_PROVIDER:
+          process.env.AUTH_E2E_LOBBY === "1" ? "daily" : "disabled",
+        DAILY_DOMAIN: "test-only",
+        DAILY_API_KEY: "test-only-not-a-real-key",
         SMTP_HOST: "127.0.0.1",
         SMTP_PORT: "1025",
         SMTP_SECURE: "false",

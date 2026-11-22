@@ -43,8 +43,8 @@ export default function FAQ() {
     [
       translate("Da li su seanse online?", "Are sessions online?"),
       translate(
-        "Da, za usluge označene kao online kada je video servis uključen. Nakon potvrde termina otvorite online seansu iz svojih rezervacija. Ulazak se otvara 10 minuta prije početka, a poziv je za terapeuta i jednog klijenta.",
-        "Yes, for services marked online when the video service is enabled. After confirmation, open the online session from your bookings. Access opens 10 minutes before the appointment, for a therapist and one client.",
+        "Da, za usluge označene kao online kada je video servis uključen. Nakon potvrde termina otvorite čekaonicu iz svojih rezervacija, najranije 10 minuta prije početka. Terapeut pokreće razgovor kada su terapeut i klijent spremni; čekanje ne uključuje video poziv.",
+        "Yes, for services marked online when the video service is enabled. After confirmation, open the waiting room from your bookings, starting 10 minutes before the appointment. The therapist starts when both participants are ready; waiting does not connect a video call.",
       ),
     ],
     [

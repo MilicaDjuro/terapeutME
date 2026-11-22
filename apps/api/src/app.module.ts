@@ -34,6 +34,7 @@ import { TherapistNotesService } from "./notes/therapist-notes.service";
 import { SessionRatingController } from "./bookings/session-rating.controller";
 import { SessionRatingService } from "./bookings/session-rating.service";
 import { DailyService } from "./online-sessions/daily.service";
+import { OnlineLobbyService } from "./online-sessions/online-lobby.service";
 import { OnlineSessionsService } from "./online-sessions/online-sessions.service";
 import { OnlineSessionsController } from "./online-sessions/online-sessions.controller";
 
@@ -74,6 +75,7 @@ import { OnlineSessionsController } from "./online-sessions/online-sessions.cont
     TherapistNotesService,
     SessionRatingService,
     DailyService,
+    OnlineLobbyService,
     OnlineSessionsService,
   ],
 })

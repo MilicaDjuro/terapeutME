@@ -98,7 +98,7 @@ export function buildBookingEmail(
     previous = `\nPrethodni termin: ${details.previousDate} u ${timeLabel(details.previousStart)}.\nNovi predlog je naveden ispod.\n`;
   }
   const location = details.online
-    ? "Način rada: Online video seansa. Ulazak iz potvrđene rezervacije u aplikaciji, 10 minuta prije termina."
+    ? "Način rada: Online video seansa. Čekaonica se otvara iz potvrđene rezervacije, 10 minuta prije termina. Razgovor pokreće terapeut kada ste oboje spremni."
     : `Ordinacija: ${[details.city, details.address].filter(Boolean).join(", ")}`;
   const text = `${introduction}\n${previous}\nTerapeut: ${details.therapistName}\nKlijent: ${details.clientName}\nVrsta seanse: ${details.serviceName}\nDatum: ${date}\nVrijeme: ${timeLabel(details.start)}–${timeLabel(details.end)} (Europe/Podgorica)\nTrajanje: ${details.duration} min\nCijena: ${price}\n${location}\n\n${instruction}\n\nOtvorite zahtjev u aplikaciji:\n${link}\n\nNajnovije stanje i istorija zahtjeva dostupni su u aplikaciji. Za promjenu termina koristite aplikaciju.`;
   return { subject, text };

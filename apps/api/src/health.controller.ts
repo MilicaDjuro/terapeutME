@@ -26,12 +26,12 @@ export class HealthController {
         "SELECT name FROM schema_migrations WHERE name IN ('013-profile-analytics','014-profile-view-events','015-therapist-notes','016-session-ratings')",
       );
       const online = await this.database.pool.query(
-        "SELECT name FROM schema_migrations WHERE name='015-online-sessions'",
+        "SELECT name FROM schema_migrations WHERE name IN ('015-online-sessions','017-online-lobby')",
       );
       if (
         migration.rowCount !== 11 ||
         features.rowCount !== 4 ||
-        online.rowCount !== 1
+        online.rowCount !== 2
       )
         throw new Error("Migracije nijesu primijenjene.");
     } catch {

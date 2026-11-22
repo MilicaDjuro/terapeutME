@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Header,
@@ -32,7 +33,23 @@ export class OnlineSessionsController {
   /** Kreira/ponovo koristi privatnu sobu i vraća pristup jednom učesniku. */
   @Post("join")
   @Header("Cache-Control", "no-store")
-  join(@Req() request: Request, @Param("id") id: string) {
-    return this.sessions.join(sessionToken(request), id);
+  join(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.sessions.join(sessionToken(request), id, body);
+  }
+
+  /** Spremnost, heartbeat, početak i izlazak obrađuje server bez povezivanja sa Daily-jem. */
+  @Post("lobby/:action")
+  @Header("Cache-Control", "no-store")
+  lobby(
+    @Req() request: Request,
+    @Param("id") id: string,
+    @Param("action") action: string,
+    @Body() body: unknown,
+  ) {
+    return this.sessions.lobbyAction(sessionToken(request), id, action, body);
   }
 }

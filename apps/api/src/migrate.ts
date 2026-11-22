@@ -45,6 +45,7 @@ async function migrate() {
       "015-therapist-notes.sql",
       "016-session-ratings.sql",
       "015-online-sessions.sql",
+      "017-online-lobby.sql",
     ]) {
       // Evidentirane migracije ne izvršavamo ponovo: stara 005 ne smije deaktivirati nove seanse od 40/50 minuta.
       const table = await pool.query(

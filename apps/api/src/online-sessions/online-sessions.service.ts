@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
@@ -16,6 +17,12 @@ import { AuthService } from "../auth/auth.service";
 import type { AccountUser } from "../auth/auth.types";
 import { configuredVideoProvider } from "../config";
 import { DailyService } from "./daily.service";
+import { requireBody } from "../auth/auth.validation";
+import {
+  OnlineLobbyService,
+  type LobbyAction,
+  type LobbyState,
+} from "./online-lobby.service";
 
 interface SessionBooking {
   id: string;
@@ -50,6 +57,7 @@ export class OnlineSessionsService implements OnModuleInit, OnModuleDestroy {
     @Inject(DatabaseService) private readonly database: DatabaseService,
     @Inject(AuthService) private readonly auth: AuthService,
     @Inject(DailyService) private readonly daily: DailyService,
+    @Inject(OnlineLobbyService) private readonly lobby: OnlineLobbyService,
   ) {}
 
   /** Otkazane i promijenjene termine čistimo i kada korisnik zatvori browser. */
@@ -127,7 +135,77 @@ export class OnlineSessionsService implements OnModuleInit, OnModuleDestroy {
   /** Vraća podatke za pripremu kamere; čitanje ne pravi sobu i ne troši video minute. */
   async info(token: string | undefined, bookingId: string) {
     const user = await this.auth.getAccount(token);
-    return this.details(await this.booking(user, bookingId), user);
+    const booking = await this.booking(user, bookingId);
+    return this.withLobby(
+      booking,
+      user,
+      await this.lobby.state(booking.id, booking.state_version),
+    );
+  }
+
+  /** Razdvaja besplatno čekanje od odobrenog video ulaska; GET nikad ne pokreće razgovor. */
+  private withLobby(
+    booking: SessionBooking,
+    user: AccountUser,
+    lobby: LobbyState,
+  ) {
+    const information = this.details(booking, user);
+    const started =
+      lobby.startedAt !== null && lobby.therapistReady && lobby.clientReady;
+    return {
+      ...information,
+      canWait: information.canJoin,
+      canJoin: information.canJoin && started,
+      reason:
+        information.reason ||
+        (started
+          ? ""
+          : "Razgovor pokreće terapeut kada su oba učesnika spremna u čekaonici."),
+      lobby,
+    };
+  }
+
+  /** Provjerava nasumičnu oznaku browser prisustva/početka prije SQL pristupa. */
+  private lobbyIdentifier(value: unknown): string {
+    if (
+      typeof value !== "string" ||
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
+        value,
+      )
+    )
+      throw new BadRequestException("Neispravna oznaka čekaonice.");
+    return value;
+  }
+
+  /** Prima spremnost i prisustvo preko naše baze; početak odobrava isključivo terapeut rezervacije. */
+  async lobbyAction(
+    token: string | undefined,
+    bookingId: string,
+    action: string,
+    value: unknown,
+  ) {
+    const user = await this.auth.getAccount(token);
+    const booking = await this.booking(user, bookingId);
+    if (!["ready", "heartbeat", "start", "leave"].includes(action))
+      throw new BadRequestException("Nepoznata radnja čekaonice.");
+    if (action === "start" && user.role !== "THERAPIST")
+      throw new ForbiddenException("Razgovor pokreće terapeut.");
+    const body = requireBody(value);
+    const presenceId = this.lobbyIdentifier(body.presenceId);
+    const information = this.details(booking, user);
+    if (action !== "leave" && !information.canJoin)
+      throw new ConflictException(information.reason);
+    if (action === "ready" || action === "start")
+      await this.auth.limitAttempts(`video-lobby:${user.id}`, 60, 300);
+    const state = await this.lobby.update(
+      booking.id,
+      booking.state_version,
+      user.role as "CLIENT" | "THERAPIST",
+      presenceId,
+      action as LobbyAction,
+    );
+    if (action === "leave") void this.closeRevokedRooms();
+    return this.withLobby(booking, user, state);
   }
 
   /** Jedna soba ima samo jedan mrežni upis/brisanje odjednom; nema otvorene SQL transakcije tokom čekanja. */
@@ -162,38 +240,60 @@ export class OnlineSessionsService implements OnModuleInit, OnModuleDestroy {
   }
 
   /** Izdaje pristup tek poslije vlasništva, statusa i roka; token se ne upisuje u bazu. */
-  async join(token: string | undefined, bookingId: string) {
+  async join(token: string | undefined, bookingId: string, value: unknown) {
     const user = await this.auth.getAccount(token);
     const booking = await this.booking(user, bookingId);
     const information = this.details(booking, user);
     if (!information.configured)
       throw new ServiceUnavailableException(information.reason);
     if (!information.canJoin) throw new ConflictException(information.reason);
+    const body = requireBody(value);
+    const presenceId = this.lobbyIdentifier(body.presenceId);
+    const lobbyId = this.lobbyIdentifier(body.lobbyId);
+    const role = user.role as "CLIENT" | "THERAPIST";
+    if (
+      !(await this.lobby.permitsJoin(
+        booking.id,
+        booking.state_version,
+        role,
+        presenceId,
+        lobbyId,
+      ))
+    )
+      throw new ConflictException(
+        "Prvo uđite u čekaonicu i sačekajte da terapeut pokrene razgovor kada ste oboje spremni.",
+      );
     await this.auth.limitAttempts(`video-join:${user.id}`, 30, 300);
 
     // Rezervišemo identitet sobe u jednoj kratkoj SQL naredbi. Mrežno čekanje nikad ne drži transakciju.
     await this.database.pool.query(
-      `INSERT INTO online_session_rooms(booking_id,booking_version,room_name,expires_at)
-       SELECT id,state_version,$3,end_at+interval '10 minutes' FROM booking_requests
+      `INSERT INTO online_session_rooms(booking_id,booking_version,room_name,expires_at,lobby_id)
+       SELECT id,state_version,$3,end_at+interval '10 minutes',$4 FROM booking_requests
        WHERE id=$1 AND state_version=$2 AND status='CONFIRMED' AND online
        AND now()>=start_at-interval '10 minutes' AND now()<end_at+interval '10 minutes'
-       ON CONFLICT(booking_id,booking_version) DO NOTHING`,
+       ON CONFLICT(booking_id,booking_version,lobby_id) DO NOTHING`,
       [
         booking.id,
         booking.state_version,
         `tm-${randomUUID().replaceAll("-", "")}`,
+        lobbyId,
       ],
     );
     const stored = await this.database.pool.query<SessionRoom>(
-      "SELECT * FROM online_session_rooms WHERE booking_id=$1 AND booking_version=$2",
-      [booking.id, booking.state_version],
+      "SELECT * FROM online_session_rooms WHERE booking_id=$1 AND booking_version=$2 AND lobby_id=$3",
+      [booking.id, booking.state_version, lobbyId],
     );
     const room = stored.rows[0];
     if (!room || room.revoked_at || room.closed_at)
       throw new ConflictException(
         "Termin je promijenjen. Osvježite rezervaciju.",
       );
-    const locked = await this.lockRoom(room.id);
+    // Zajednički početak šalje dva ulaska skoro istovremeno; drugi kratko čeka prvo podešavanje sobe.
+    let locked = await this.lockRoom(room.id);
+    for (let attempt = 0; !locked && attempt < 40; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      locked = await this.lockRoom(room.id);
+    }
     if (!locked)
       throw new ConflictException(
         "Drugi učesnik upravo priprema sobu. Pokušajte ponovo za nekoliko sekundi.",
@@ -204,7 +304,17 @@ export class OnlineSessionsService implements OnModuleInit, OnModuleDestroy {
         "SELECT id FROM online_session_rooms WHERE id=$1 AND revoked_at IS NULL AND closed_at IS NULL",
         [room.id],
       );
-      if (!ready.rowCount)
+      if (
+        !ready.rowCount ||
+        !(await this.lobby.permitsJoin(
+          booking.id,
+          booking.state_version,
+          role,
+          presenceId,
+          lobbyId,
+          locked,
+        ))
+      )
         throw new ConflictException(
           "Termin je promijenjen. Osvježite rezervaciju.",
         );
@@ -228,7 +338,15 @@ export class OnlineSessionsService implements OnModuleInit, OnModuleDestroy {
       if (
         current.state_version !== booking.state_version ||
         !this.details(current, user).canJoin ||
-        !validRoom.rowCount
+        !validRoom.rowCount ||
+        !(await this.lobby.permitsJoin(
+          booking.id,
+          booking.state_version,
+          role,
+          presenceId,
+          lobbyId,
+          locked,
+        ))
       ) {
         await locked.query(
           "UPDATE online_session_rooms SET revoked_at=COALESCE(revoked_at,now()) WHERE id=$1",
@@ -276,10 +394,14 @@ export class OnlineSessionsService implements OnModuleInit, OnModuleDestroy {
       `SELECT r.*,b.client_user_id,t.linked_user_id AS therapist_user_id FROM online_session_rooms r
        JOIN booking_requests b ON b.id=r.booking_id JOIN therapists t ON t.id=b.therapist_id
        LEFT JOIN users cu ON cu.id=b.client_user_id LEFT JOIN users tu ON tu.id=t.linked_user_id
+       LEFT JOIN online_session_lobbies l ON l.booking_id=b.id AND l.booking_version=b.state_version
        WHERE r.closed_at IS NULL AND (r.revoked_at IS NOT NULL OR r.expires_at<=now() OR b.status<>'CONFIRMED'
        OR b.state_version<>r.booking_version OR NOT b.online OR NOT t.is_active
        OR cu.id IS NULL OR tu.id IS NULL OR cu.suspended_at IS NOT NULL OR tu.suspended_at IS NOT NULL
-       OR cu.verified_at IS NULL OR tu.verified_at IS NULL OR cu.role<>'CLIENT' OR tu.role<>'THERAPIST') ORDER BY r.created_at LIMIT 20`,
+       OR cu.verified_at IS NULL OR tu.verified_at IS NULL OR cu.role<>'CLIENT' OR tu.role<>'THERAPIST'
+       OR l.generation IS DISTINCT FROM r.lobby_id OR l.started_at IS NULL
+       OR l.therapist_ready_at IS NULL OR l.client_ready_at IS NULL
+       OR l.therapist_ready_at<=now()-interval '30 seconds' OR l.client_ready_at<=now()-interval '30 seconds') ORDER BY r.created_at LIMIT 20`,
     );
     for (const room of result.rows) {
       const locked = await this.lockRoom(room.id);

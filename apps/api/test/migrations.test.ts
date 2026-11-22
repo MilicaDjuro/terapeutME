@@ -43,7 +43,7 @@ test(
       const migrations = await isolated.query(
         "SELECT name FROM schema_migrations",
       );
-      assert.equal(migrations.rowCount, 16);
+      assert.equal(migrations.rowCount, 17);
       assert.ok(
         migrations.rows.some(
           (migration) => migration.name === "016-session-ratings",
@@ -68,7 +68,7 @@ test(
       const repeatedMigrations = await isolated.query(
         "SELECT name FROM schema_migrations",
       );
-      assert.equal(repeatedMigrations.rowCount, 16);
+      assert.equal(repeatedMigrations.rowCount, 17);
     } finally {
       await isolated.end();
       await admin.query(`DROP SCHEMA IF EXISTS ${schemaName} CASCADE`);

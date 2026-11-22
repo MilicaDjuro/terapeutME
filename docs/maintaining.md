@@ -16,6 +16,8 @@ Ovaj vodič je za osobu koja zna osnove JavaScripta, ali tek upoznaje Next.js, N
 
 ## Kako Next.js pronađe stranicu
 
+Čekaonica za online seansu je odvojena od Daily poziva: `OnlineLobbyService` i migracija 017 čuvaju spremnost dva browsera u bazi. `OnlineSession` šalje heartbeat dok korisnik čeka ili razgovara. Klik „Spreman/na sam“ ne dobija video token. Samo vlasnik terapeuta može pokrenuti razgovor kada su oba učesnika prisutna; tek tada `joinOnlineSession` traži Daily pristup. Izlazak vraća oba učesnika u čekaonicu i opoziva staru sobu. Granice obračuna i mjesta za debugging su u [online-sessions.md](online-sessions.md).
+
 Ocjene završenih seansi su u `features/session-rating.tsx`, uz klijentov termin. `SessionRatingService.save` provjerava JWT, vlasnika i stvarni završetak; migracija 016 čuva jednu ocjenu po seansi. `DirectoryService.list` računa zbir bodova i broj ocjena, a `features/profile.tsx` ih prikazuje bez identiteta klijenata. `TherapistCard` u `components/ui.tsx` ističe iste bodove na početnoj i u katalogu kroz `.card-rating` iz `brand.css`. Tok, pravilo jednog slanja i mjesta za breakpoint su u [session-ratings.md](session-ratings.md).
 
 Privatne bilješke po klijentu su na `/dashboard/notes`: `features/therapist-notes.tsx` prikazuje izbor klijenta i formular, a API `notes/therapist-notes.service.ts` provjerava autora, vezu sa klijentom i verziju prije upisa. Bilješke se ne dijele sa klijentom. Tok baze, privatnost i mjesta za breakpoint su u [private-notes.md](private-notes.md).

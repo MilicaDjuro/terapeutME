@@ -577,8 +577,8 @@ function ServerBookingCard({
         <div className="online-booking-access">
           <p className="muted small">
             {translate(
-              "Online seansa · pristup iz potvrđenog termina, 10 minuta prije početka.",
-              "Online session · join from a confirmed booking, 10 minutes before the start.",
+              "Online seansa · čekaonica je dostupna 10 minuta prije početka. Razgovor pokreće terapeut.",
+              "Online session · the waiting room opens 10 minutes before the start. The therapist starts the conversation.",
             )}
           </p>
           {booking.status === "CONFIRMED" && (

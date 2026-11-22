@@ -1,4 +1,22 @@
 /* Privatna seansa koristi postojeće boje brenda; tamna pozadina daje prednost razgovoru. */
+.session-lobby {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #cbded5;
+  border-radius: 14px;
+  background: #f0f7f3;
+}
+.session-lobby h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.session-lobby ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  line-height: 1.9;
+}
 .session-page {
   max-width: 1440px;
   margin: 0 auto;

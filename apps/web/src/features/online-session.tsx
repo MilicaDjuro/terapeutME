@@ -19,6 +19,9 @@ import { useDemo } from "@/lib/demo-context";
 import { authErrorMessage } from "@/lib/auth-client";
 import {
   requestOnlineSession,
+  requestLobbyAction,
+  joinOnlineSession,
+  leaveOnlineLobby,
   type OnlineSessionInfo,
 } from "@/lib/online-session-client";
 import {
@@ -52,6 +55,14 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
   const [cameraId, setCameraId] = useState("");
   const [mediaPending, setMediaPending] = useState(false);
   const [reload, setReload] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [lobbyPending, setLobbyPending] = useState("");
+  const readyRef = useRef(false);
+  const presenceId = useRef("");
+  const lobbyActionPending = useRef(false);
+  const lobbyRequest = useRef<AbortController | null>(null);
+  const informationSequence = useRef(0);
+  const connectedLobby = useRef<string | null>(null);
   const connection = useRef<VideoConnection | null>(null);
   const closingConnection = useRef<Promise<void> | null>(null);
   const previewStream = useRef<MediaStream | null>(null);
@@ -77,8 +88,15 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
   function closeConnection() {
     const previous = connection.current;
     connection.current = null;
+    connectedLobby.current = null;
     if (previous) closingConnection.current = previous.close();
     return closingConnection.current;
+  }
+
+  /** Spremnost prikaza i periodičnih provjera mijenja zajedno, bez čuvanja u browser skladištu. */
+  function changeReady(value: boolean) {
+    readyRef.current = value;
+    setReady(value);
   }
 
   // Identitet/rezervacija određuju lifecycle. Odjava ili navigacija gase kameru i stari asinhroni ulazak.
@@ -91,22 +109,34 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
     setParticipants([]);
     setPreview(null);
     setStatus("preparing");
+    changeReady(false);
+    presenceId.current = "";
+    lobbyActionPending.current = false;
+    setLobbyPending("");
     /** Periodično čita dozvole; otkazivanje, odjava i istek zatvaraju i već otvoreni ekran poziva. */
     async function loadInformation() {
+      if (lobbyActionPending.current) return;
       if (!user) {
         if (!authLoading) setLoading(false);
         return;
       }
+      const sequence = ++informationSequence.current;
       try {
-        const result = await requestOnlineSession(
-          bookingId,
-          false,
-          controller.signal,
-        );
-        if (disposed) return;
+        const result = readyRef.current
+          ? await requestLobbyAction(
+              bookingId,
+              "heartbeat",
+              presenceId.current,
+              controller.signal,
+            )
+          : await requestOnlineSession(bookingId, controller.signal);
+        if (disposed || sequence !== informationSequence.current) return;
         setInformation(result);
         setError("");
-        if (!result.canJoin && connection.current) {
+        if (
+          connectedLobby.current &&
+          (!result.canJoin || result.lobby.id !== connectedLobby.current)
+        ) {
           operation.current += 1;
           joinRequest.current?.abort();
           joining.current = false;
@@ -114,11 +144,23 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
           setParticipants([]);
           setStatus("left");
         }
+        if (!result.canWait && readyRef.current) {
+          void leaveOnlineLobby(bookingId, presenceId.current).catch(
+            () => undefined,
+          );
+          changeReady(false);
+        }
       } catch (failure) {
-        if (!disposed) {
+        if (!disposed && sequence === informationSequence.current) {
           setError(authErrorMessage(failure));
+          if (readyRef.current) {
+            void leaveOnlineLobby(bookingId, presenceId.current).catch(
+              () => undefined,
+            );
+            changeReady(false);
+          }
           // Ne zadržavamo kameru u privatnoj sesiji ako server više ne potvrđuje pristup.
-          if (connection.current) {
+          if (connectedLobby.current) {
             operation.current += 1;
             joinRequest.current?.abort();
             joining.current = false;
@@ -134,12 +176,20 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
     void loadInformation();
     const timer = setInterval(() => {
       void loadInformation();
-    }, 15000);
+    }, 3000);
     /** Uklanja timer, prekida mrežu i gasi medije čak i dok traje zahtjev za browser dozvolu. */
     function cleanupSession() {
       disposed = true;
       controller.abort();
       clearInterval(timer);
+      informationSequence.current += 1;
+      lobbyRequest.current?.abort();
+      if (presenceId.current)
+        void leaveOnlineLobby(bookingId, presenceId.current).catch(
+          () => undefined,
+        );
+      readyRef.current = false;
+      presenceId.current = "";
       operation.current += 1;
       joinRequest.current?.abort();
       joining.current = false;
@@ -148,6 +198,86 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
     }
     return cleanupSession;
   }, [bookingId, user?.id, authLoading, reload]);
+
+  // Spremnost sama ne povezuje Daily; automatski ulazak slijedi tek poslije zajedničkog odobrenog početka.
+  useEffect(() => {
+    if (ready && information?.canJoin && information.lobby.startedAt)
+      void handleJoin();
+  }, [
+    ready,
+    information?.lobby.id,
+    information?.lobby.startedAt,
+    information?.canJoin,
+  ]);
+
+  /** Ulazi samo u naš lobi; kamera ostaje lokalna dok terapeut ne pokrene razgovor. */
+  async function handleReady() {
+    if (lobbyActionPending.current || readyRef.current || !information?.canWait)
+      return;
+    const identifier = crypto.randomUUID();
+    presenceId.current = identifier;
+    const controller = new AbortController();
+    lobbyRequest.current = controller;
+    lobbyActionPending.current = true;
+    informationSequence.current += 1;
+    setLobbyPending("ready");
+    setError("");
+    try {
+      const result = await requestLobbyAction(
+        bookingId,
+        "ready",
+        identifier,
+        controller.signal,
+      );
+      if (controller.signal.aborted || presenceId.current !== identifier)
+        return;
+      changeReady(true);
+      setInformation(result);
+      setStatus("preparing");
+    } catch (failure) {
+      if (!controller.signal.aborted) {
+        void leaveOnlineLobby(bookingId, identifier).catch(() => undefined);
+        setError(authErrorMessage(failure));
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        lobbyActionPending.current = false;
+        setLobbyPending("");
+      }
+    }
+  }
+
+  /** Terapeut odobrava početak tek kad server potvrdi svježu spremnost oba učesnika. */
+  async function handleStart() {
+    if (
+      lobbyActionPending.current ||
+      !readyRef.current ||
+      information?.role !== "THERAPIST"
+    )
+      return;
+    const controller = new AbortController();
+    lobbyRequest.current = controller;
+    lobbyActionPending.current = true;
+    informationSequence.current += 1;
+    setLobbyPending("start");
+    setError("");
+    try {
+      const result = await requestLobbyAction(
+        bookingId,
+        "start",
+        presenceId.current,
+        controller.signal,
+      );
+      if (!controller.signal.aborted) setInformation(result);
+    } catch (failure) {
+      if (!controller.signal.aborted) setError(authErrorMessage(failure));
+    } finally {
+      if (!controller.signal.aborted) {
+        lobbyActionPending.current = false;
+        setLobbyPending("");
+      }
+    }
+  }
 
   /** Traži browser dozvolu tek na klik; pregled se ne šalje terapeutu niti Daily-ju. */
   async function handlePreview() {
@@ -205,11 +335,20 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
 
   /** Traži serverski pristup i povezuje poziv; zakašnjeli odgovor poslije izlaska odmah se odbacuje. */
   async function handleJoin() {
-    if (joining.current || connection.current || !information?.canJoin) return;
+    if (
+      joining.current ||
+      connection.current ||
+      !readyRef.current ||
+      !information?.canJoin ||
+      !information.lobby.id
+    )
+      return;
     joining.current = true;
     const current = ++operation.current;
     const controller = new AbortController();
     joinRequest.current = controller;
+    const lobbyId = information.lobby.id;
+    connectedLobby.current = lobbyId;
     stopPreview();
     setPreview(null);
     setMediaPending(false);
@@ -220,9 +359,10 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
     try {
       await closingConnection.current;
       if (current !== operation.current) return;
-      const credentials = await requestOnlineSession(
+      const credentials = await joinOnlineSession(
         bookingId,
-        true,
+        presenceId.current,
+        lobbyId,
         controller.signal,
       );
       if (current !== operation.current) return;
@@ -237,6 +377,11 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
               if (nextStatus === "left") {
                 joining.current = false;
                 void closeConnection();
+                if (readyRef.current)
+                  void leaveOnlineLobby(bookingId, presenceId.current).catch(
+                    () => undefined,
+                  );
+                changeReady(false);
                 setParticipants([]);
               }
             }
@@ -262,6 +407,7 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
       await opened?.close();
       if (current === operation.current) {
         connection.current = null;
+        connectedLobby.current = null;
         setStatus("preparing");
         setParticipants([]);
         setError(authErrorMessage(failure));
@@ -273,6 +419,13 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
 
   /** Koči dvostruki ulazak i oslobađa kameru; izlazak ne mijenja ishod terapeutske rezervacije. */
   async function handleLeave() {
+    const identifier = presenceId.current;
+    const wasReady = readyRef.current;
+    changeReady(false);
+    informationSequence.current += 1;
+    lobbyRequest.current?.abort();
+    lobbyActionPending.current = false;
+    setLobbyPending("");
     operation.current += 1;
     joining.current = false;
     joinRequest.current?.abort();
@@ -282,6 +435,17 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
     setParticipants([]);
     setStatus("left");
     await closeConnection();
+    if (wasReady) {
+      try {
+        await leaveOnlineLobby(bookingId, identifier);
+        const result = await requestOnlineSession(bookingId);
+        if (presenceId.current === identifier) setInformation(result);
+      } catch {
+        setError(
+          "Izašli ste iz poziva. Odjava iz čekaonice čeka potvrdu servera.",
+        );
+      }
+    }
   }
 
   /** Gasi/uključuje naš mikrofon u pregledu i pozivu; tuđi zvuk se ne mijenja. */
@@ -433,7 +597,9 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
         ? translate("Povezivanje…", "Connecting…")
         : status === "reconnecting"
           ? translate("Ponovno povezivanje…", "Reconnecting…")
-          : translate("Priprema za razgovor", "Prepare for your session");
+          : ready
+            ? translate("U čekaonici", "In the waiting room")
+            : translate("Priprema za razgovor", "Prepare for your session");
   return (
     <div className="session-page">
       <div className="session-topbar">
@@ -532,10 +698,15 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
               <h2>
                 {status === "left"
                   ? translate("Izašli ste iz poziva", "You left the call")
-                  : translate(
-                      "Pripremite se za razgovor",
-                      "Get ready for your session",
-                    )}
+                  : ready
+                    ? translate(
+                        "U čekaonici ste",
+                        "You are in the waiting room",
+                      )
+                    : translate(
+                        "Pripremite se za razgovor",
+                        "Get ready for your session",
+                      )}
               </h2>
               <p>
                 {translate(
@@ -681,19 +852,93 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
                 ))}
             </select>
           </label>
-          {!active && (
+          {!active && !ready && (
             <ActionButton
-              pending={false}
+              pending={lobbyPending === "ready"}
               type="button"
               className="button button-primary session-join"
-              disabled={!information.canJoin || mediaPending}
-              onClick={handleJoin}
+              disabled={
+                !information.canWait || mediaPending || lobbyPending !== ""
+              }
+              onClick={handleReady}
             >
               <Video size={18} />
-              {translate("Pridruži se seansi", "Join session")}
+              {translate("Spreman/na sam", "I am ready")}
             </ActionButton>
           )}
-          {!information.canJoin && (
+          {ready && !active && (
+            <div
+              className="session-lobby"
+              aria-label={translate("Čekaonica", "Waiting room")}
+            >
+              <h3>{translate("Čekaonica", "Waiting room")}</h3>
+              <p>
+                {translate(
+                  "Dok čekate, nijeste povezani na video poziv. Pregled kamere vidite samo vi.",
+                  "While waiting, you are not connected to a video call. Only you can see the camera preview.",
+                )}
+              </p>
+              <ul>
+                <li>
+                  {translate("Terapeut", "Therapist")}:{" "}
+                  {information.lobby.therapistReady
+                    ? translate("Spreman/na", "Ready")
+                    : translate("Čekamo", "Waiting")}
+                </li>
+                <li>
+                  {translate("Klijent", "Client")}:{" "}
+                  {information.lobby.clientReady
+                    ? translate("Spreman/na", "Ready")
+                    : translate("Čekamo", "Waiting")}
+                </li>
+              </ul>
+              {information.role === "THERAPIST" &&
+                !information.lobby.startedAt && (
+                  <ActionButton
+                    type="button"
+                    pending={lobbyPending === "start"}
+                    pendingText={translate("Pokretanje…", "Starting…")}
+                    className="button button-primary"
+                    disabled={
+                      !information.canWait ||
+                      !information.lobby.therapistReady ||
+                      !information.lobby.clientReady ||
+                      lobbyPending !== ""
+                    }
+                    onClick={handleStart}
+                  >
+                    {translate("Pokreni razgovor", "Start conversation")}
+                  </ActionButton>
+                )}
+              {information.role === "CLIENT" &&
+                !information.lobby.startedAt && (
+                  <p role="status">
+                    {translate(
+                      "Razgovor će pokrenuti terapeut kada ste oboje spremni.",
+                      "The therapist will start the conversation when you are both ready.",
+                    )}
+                  </p>
+                )}
+              {information.canJoin && (
+                <ActionButton
+                  type="button"
+                  pending={false}
+                  className="button button-primary"
+                  onClick={handleJoin}
+                >
+                  {translate("Ponovi povezivanje", "Retry connection")}
+                </ActionButton>
+              )}
+              <button
+                type="button"
+                className="button button-outline"
+                onClick={handleLeave}
+              >
+                {translate("Napusti čekaonicu", "Leave waiting room")}
+              </button>
+            </div>
+          )}
+          {!information.canWait && (
             <p className="session-access-notice" role="status">
               {information.reason}
             </p>
@@ -717,8 +962,8 @@ export function OnlineSession({ bookingId }: { bookingId: string }) {
           </p>
           <p className="muted small">
             {translate(
-              "Ulazak: 10 minuta prije termina. Poziv se zatvara 10 minuta nakon zakazanog završetka. Izlazak ne označava seansu kao održanu.",
-              "Join 10 minutes before your appointment. The call closes 10 minutes after the scheduled end. Leaving does not mark the session as completed.",
+              "Čekaonica se otvara 10 minuta prije termina. Terapeut pokreće razgovor kada ste oboje spremni. Poziv se zatvara 10 minuta nakon zakazanog završetka.",
+              "The waiting room opens 10 minutes before your appointment. The therapist starts when you are both ready. The call closes 10 minutes after the scheduled end.",
             )}
           </p>
         </aside>

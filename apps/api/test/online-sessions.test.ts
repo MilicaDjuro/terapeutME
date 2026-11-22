@@ -11,6 +11,7 @@ import type { AccountUser } from "../src/auth/auth.types";
 import { DailyService } from "../src/online-sessions/daily.service";
 import { OnlineSessionsService } from "../src/online-sessions/online-sessions.service";
 import { configuredVideoProvider } from "../src/config";
+import { OnlineLobbyService } from "../src/online-sessions/online-lobby.service";
 
 // Nijedan test ne kontaktira Daily nalog ili stvarnu bazu korisnika.
 test("video configuration stays disabled until explicitly configured", () => {
@@ -56,7 +57,12 @@ test(
       async limitAttempts() {},
     } as unknown as AuthService;
     const daily = new DailyService();
-    const sessions = new OnlineSessionsService(database, auth, daily);
+    const sessions = new OnlineSessionsService(
+      database,
+      auth,
+      daily,
+      new OnlineLobbyService(database),
+    );
     context.after(async () => {
       await sessions.onModuleDestroy();
       await database.pool.end();
@@ -175,28 +181,122 @@ test(
       },
     );
 
+    const presence = new Map<string, string>();
+    let lobbyId = randomUUID();
+    /** Svaki video pokušaj nosi stvarnu browser oznaku i trenutno odobreni početak. */
+    function join(token: string | undefined, identifier = bookingId) {
+      return sessions.join(token, identifier, {
+        presenceId: presence.get(token || "") || randomUUID(),
+        lobbyId,
+      });
+    }
+    /** Održava dva testna učesnika spremnim bez kontaktiranja video servisa. */
+    async function startLobby() {
+      const previous = await sessions.info(userIds[0], bookingId);
+      for (const index of [2, 0]) {
+        const ready =
+          index === 0
+            ? previous.lobby.therapistReady
+            : previous.lobby.clientReady;
+        if (!ready || !presence.has(userIds[index]))
+          presence.set(userIds[index], randomUUID());
+        await sessions.lobbyAction(userIds[index], bookingId, "ready", {
+          presenceId: presence.get(userIds[index]),
+        });
+      }
+      const result = await sessions.lobbyAction(
+        userIds[0],
+        bookingId,
+        "start",
+        { presenceId: presence.get(userIds[0]) },
+      );
+      lobbyId = result.lobby.id!;
+    }
+
     await context.test(
       "only the booked client and owning therapist can read preparation or obtain credentials",
       async () => {
         for (const token of [undefined, userIds[1], userIds[3], userIds[4]]) {
           await assert.rejects(sessions.info(token, bookingId));
-          await assert.rejects(sessions.join(token, bookingId));
+          await assert.rejects(join(token, bookingId));
         }
         assert.equal(requests.length, 0);
         const info = await sessions.info(userIds[2], bookingId);
-        assert.equal(info.canJoin, true);
+        assert.equal(info.canWait, true);
+        assert.equal(info.canJoin, false);
         assert.equal("roomUrl" in info, false);
         assert.equal("token" in info, false);
         assert.equal("clientEmail" in info, false);
-        await assert.rejects(sessions.join(userIds[2], "bad-id' OR TRUE--"));
+        await assert.rejects(join(userIds[2], "bad-id' OR TRUE--"));
+      },
+    );
+
+    await context.test(
+      "waiting, previews and readiness never create Daily rooms or tokens; only the therapist starts",
+      async () => {
+        for (const token of [undefined, userIds[1], userIds[3], userIds[4]])
+          await assert.rejects(
+            sessions.lobbyAction(token, bookingId, "ready", {
+              presenceId: randomUUID(),
+            }),
+          );
+        await assert.rejects(join(userIds[2]), /čekaonicu/);
+        const clientPresence = randomUUID();
+        presence.set(userIds[2], clientPresence);
+        const waiting = await sessions.lobbyAction(
+          userIds[2],
+          bookingId,
+          "ready",
+          { presenceId: clientPresence },
+        );
+        assert.equal(waiting.lobby.clientReady, true);
+        assert.equal(waiting.lobby.therapistReady, false);
+        assert.equal(waiting.canJoin, false);
+        await assert.rejects(
+          sessions.lobbyAction(userIds[2], bookingId, "start", {
+            presenceId: clientPresence,
+          }),
+          /pokreće terapeut/,
+        );
+        await assert.rejects(
+          sessions.lobbyAction(userIds[0], bookingId, "start", {
+            presenceId: randomUUID(),
+          }),
+          /oba učesnika/,
+        );
+        assert.equal(requests.length, 0);
+        presence.set(userIds[0], randomUUID());
+        const both = await sessions.lobbyAction(
+          userIds[0],
+          bookingId,
+          "ready",
+          { presenceId: presence.get(userIds[0]) },
+        );
+        assert.equal(both.lobby.therapistReady, true);
+        assert.equal(both.canJoin, false);
+        await assert.rejects(join(userIds[0]), /čekaonicu/);
+        await startLobby();
+        assert.equal(
+          (await sessions.info(userIds[2], bookingId)).canJoin,
+          true,
+        );
+        assert.equal(requests.length, 0);
+        assert.equal(
+          (
+            await database.pool.query(
+              "SELECT count(*)::int AS count FROM online_session_rooms",
+            )
+          ).rows[0].count,
+          0,
+        );
       },
     );
 
     await context.test(
       "one private two-person room is reused with separate, non-owner room-bound tokens",
       async () => {
-        const clientAccess = await sessions.join(userIds[2], bookingId);
-        const therapistAccess = await sessions.join(userIds[0], bookingId);
+        const clientAccess = await join(userIds[2], bookingId);
+        const therapistAccess = await join(userIds[0], bookingId);
         assert.equal(clientAccess.roomUrl, therapistAccess.roomUrl);
         assert.equal(rooms.size, 1);
         const properties = requests.find(
@@ -249,14 +349,84 @@ test(
       "parallel joins cannot provision a second room or race room deletion",
       async () => {
         const results = await Promise.allSettled([
-          sessions.join(userIds[2], bookingId),
-          sessions.join(userIds[0], bookingId),
+          join(userIds[2], bookingId),
+          join(userIds[0], bookingId),
         ]);
         assert.ok(results.some((result) => result.status === "fulfilled"));
         for (const result of results)
           if (result.status === "rejected")
             assert.match(String(result.reason), /priprema sobu/);
         assert.equal(rooms.size, 1);
+      },
+    );
+
+    await context.test(
+      "leaving revokes the old call and a delayed heartbeat cannot revive it",
+      async () => {
+        const oldLobbyId = lobbyId;
+        const oldPresence = presence.get(userIds[2]);
+        await sessions.lobbyAction(userIds[2], bookingId, "leave", {
+          presenceId: oldPresence,
+        });
+        await sessions.onModuleDestroy();
+        await sessions.closeRevokedRooms();
+        assert.equal(rooms.size, 0);
+        await assert.rejects(join(userIds[2]), /čekaonicu/);
+        await assert.rejects(
+          sessions.lobbyAction(userIds[2], bookingId, "heartbeat", {
+            presenceId: oldPresence,
+          }),
+          /isteklo/,
+        );
+        await assert.rejects(
+          sessions.lobbyAction(userIds[2], bookingId, "ready", {
+            presenceId: oldPresence,
+          }),
+          /isteklo/,
+        );
+        await startLobby();
+        assert.notEqual(lobbyId, oldLobbyId);
+        const before = requests.length;
+        await assert.rejects(
+          sessions.join(userIds[2], bookingId, {
+            presenceId: presence.get(userIds[2]),
+            lobbyId: oldLobbyId,
+          }),
+          /čekaonicu/,
+        );
+        assert.equal(requests.length, before);
+        await join(userIds[2]);
+        assert.equal(rooms.size, 1);
+      },
+    );
+
+    await context.test(
+      "stale presence and another browser cannot silently start a paid connection",
+      async () => {
+        await assert.rejects(
+          sessions.lobbyAction(userIds[2], bookingId, "ready", {
+            presenceId: randomUUID(),
+          }),
+          /drugom prozoru/,
+        );
+        await database.pool.query(
+          "UPDATE online_session_lobbies SET client_ready_at=now()-interval '31 seconds' WHERE booking_id=$1",
+          [bookingId],
+        );
+        await assert.rejects(join(userIds[0]), /čekaonicu/);
+        assert.equal(
+          (await sessions.info(userIds[0], bookingId)).canJoin,
+          false,
+        );
+        await sessions.closeRevokedRooms();
+        assert.equal(rooms.size, 0);
+        await assert.rejects(
+          sessions.lobbyAction(userIds[2], bookingId, "heartbeat", {
+            presenceId: presence.get(userIds[2]),
+          }),
+          /isteklo/,
+        );
+        await startLobby();
       },
     );
 
@@ -280,19 +450,13 @@ test(
           (await sessions.info(userIds[2], bookingId)).configured,
           false,
         );
-        await assert.rejects(
-          sessions.join(userIds[2], bookingId),
-          /nijesu uključeni/,
-        );
+        await assert.rejects(join(userIds[2], bookingId), /nijesu uključeni/);
         process.env.ONLINE_SESSIONS_PROVIDER = "daily";
         await database.pool.query(
           "UPDATE users SET suspended_at=now() WHERE id=$1",
           [userIds[0]],
         );
-        await assert.rejects(
-          sessions.join(userIds[2], bookingId),
-          /nije dostupan/,
-        );
+        await assert.rejects(join(userIds[2], bookingId), /nije dostupan/);
         await database.pool.query(
           "UPDATE users SET suspended_at=NULL WHERE id=$1",
           [userIds[0]],
@@ -301,10 +465,7 @@ test(
           "UPDATE booking_requests SET start_at=start_at+interval '1 day',end_at=end_at+interval '1 day',state_version=state_version+1 WHERE id=$1",
           [bookingId],
         );
-        await assert.rejects(
-          sessions.join(userIds[2], bookingId),
-          /10 minuta prije/,
-        );
+        await assert.rejects(join(userIds[2], bookingId), /10 minuta prije/);
         assert.equal(requests.length, previousCount);
         await sessions.closeRevokedRooms();
         assert.equal(rooms.size, 0);
@@ -323,15 +484,16 @@ test(
     await context.test(
       "provider failure is redacted and retry does not create a different room",
       async () => {
+        await startLobby();
         failProvider = true;
         await assert.rejects(
-          sessions.join(userIds[2], bookingId),
+          join(userIds[2], bookingId),
           (failure: Error) =>
             !failure.message.includes("private-provider-response") &&
             /Priprema video/.test(failure.message),
         );
         failProvider = false;
-        await sessions.join(userIds[2], bookingId);
+        await join(userIds[2], bookingId);
         assert.equal(rooms.size, 1);
       },
     );
@@ -341,17 +503,14 @@ test(
       async () => {
         cancelDuringToken = true;
         await assert.rejects(
-          sessions.join(userIds[2], bookingId),
+          join(userIds[2], bookingId),
           /Termin je promijenjen/,
         );
         // Sazvano čišćenje iz join-a završava prije eksplicitne naredne provjere.
         await sessions.onModuleDestroy();
         await sessions.closeRevokedRooms();
         assert.equal(rooms.size, 0);
-        await assert.rejects(
-          sessions.join(userIds[2], bookingId),
-          /potvrđen termin/,
-        );
+        await assert.rejects(join(userIds[2], bookingId), /potvrđen termin/);
         const openRooms = await database.pool.query(
           "SELECT id FROM online_session_rooms WHERE closed_at IS NULL",
         );

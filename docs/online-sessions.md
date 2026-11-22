@@ -4,11 +4,16 @@ Terapeut pri registraciji ili u **Moj pregled → Usluge → Dodaj/Uredi seansu*
 
 Klijent prije zakazivanja vidi „Online · video poziv“. Način rada kopira se u rezervaciju zajedno sa cijenom i trajanjem. Stare rezervacije i usluge ostaju uživo. Kasnija izmjena ponude ne prepravlja raniji dogovor. Ako se ponuda promijeni dok klijent popunjava formular, server traži novi izbor. Stalna serija čuva način rada polazne rezervacije. Lista čekanja uključuje način rada u saglasnost i traži novu prijavu ako se ponuda promijeni.
 
-Oba učesnika otvaraju **Otvori online seansu** iz potvrđene rezervacije. Priprema kamere i mikrofona je lokalna i ne šalje medije Daily-ju. Ulazak se otvara 10 minuta prije početka; poziv i pristup ističu 10 minuta nakon zakazanog završetka. Vremena se računaju na serveru iz `timestamptz`, a prikazuju u zoni `Europe/Podgorica`. Izlazak iz poziva ne upisuje ishod „Održano“.
+Oba učesnika otvaraju **Otvori online seansu** iz potvrđene rezervacije. Čekaonica se otvara 10 minuta prije početka. Pregled kamere i mikrofona je lokalni i ne šalje medije Daily-ju. Klik **Spreman/na sam** ulazi samo u našu čekaonicu: ne kreira Daily sobu/token i ne troši Daily participant-minute. Kada su oba učesnika spremna, isključivo terapeut bira **Pokreni razgovor**. Tada se oba browsera automatski povezuju sa Daily-jem i počinje njegov obračun stvarnog vremena povezivanja. Uspostavljanje dvije veze nije atomsko: kratko tehničko povezivanje drugog browsera nakon pokretanja može se uračunati.
+
+Poziv i pristup ističu 10 minuta nakon zakazanog završetka. Izlazak jednog učesnika opoziva tekući razgovor i vraća i preostalog učesnika u našu čekaonicu; ponovni razgovor ponovo odobrava terapeut. Izlazak ne upisuje ishod „Održano“. Vremena se računaju na serveru iz `timestamptz`, a prikazuju u zoni `Europe/Podgorica`.
 
 ## Uključivanje naloga
 
 1. Napravite nalog na [Daily dashboardu](https://dashboard.daily.co/). Izaberite naziv Daily domena, npr. `terapeut-test.daily.co`. To ne mijenja DNS niti postojeći sajt na terapeut.me.
+
+   Dashboard naloga `terapeutme` je 20. novembra 2026. zahtijevao karticu prije prve sesije. Ne oslanjajte se na starija obećanja o registraciji bez kartice: provjerite uslove koje prikazuje konkretni nalog. Besplatna kvota ne predstavlja automatsko ograničenje naplate prekoračenja.
+
 2. U Daily dashboardu otvorite odjeljak za developere/API keys i napravite API ključ. Ključ nikad ne šaljite u chat, ne stavljajte u Git i ne koristite `NEXT_PUBLIC_` prefiks.
 3. Na **Render → terapeut-api → Environment** unesite:
 
@@ -20,14 +25,20 @@ Oba učesnika otvaraju **Otvori online seansu** iz potvrđene rezervacije. Pripr
 
    `DAILY_DOMAIN` je samo naziv prije `.daily.co`, bez protokola, tačaka ili putanje. Na Vercelu nema Daily ključa. Frontend koristi postojeći API proxy i HttpOnly sesiju.
 
-4. Objavite novi kod na Renderu i Vercelu. Render start `npm run start:render` prvo primjenjuje migraciju **015-online-sessions**, zatim pokreće API. Nemojte mijenjati start u komandu koja preskače migracije. Provjerite `/api/v1/health`: `onlineSessions` treba da bude `daily`.
-5. Označite jednu testnu uslugu kao online. Iz klijentskog naloga zakažite termin, zatim ga terapeut potvrđuje. Za provjeru uživo uzmite termin koji počinje za najviše 10 minuta. Otvorite rezervaciju sa dva odvojena browser naloga/uređaja; ista prijava u dva taba nije drugi učesnik.
+4. Objavite novi kod na Renderu i Vercelu. Render start `npm run start:render` prvo primjenjuje migracije **015-online-sessions** i **017-online-lobby**, zatim pokreće API. Nemojte mijenjati start u komandu koja preskače migracije. Provjerite `/api/v1/health`: `onlineSessions` treba da bude `daily`.
+5. Označite jednu testnu uslugu kao online. Iz klijentskog naloga zakažite termin, zatim ga terapeut potvrđuje. Za provjeru uživo uzmite termin koji počinje za najviše 10 minuta. Otvorite rezervaciju sa dva odvojena browser naloga/uređaja; ista prijava u dva taba nije drugi učesnik. Oba učesnika biraju **Spreman/na sam**, pa terapeut bira **Pokreni razgovor**.
 
 Za lokalni rad ista podešavanja idu u ignorisani root `.env`, pa restart API-ja. `.local/daily-api-key.txt`, ako ga napravite za pomoć pri podešavanju, nije automatski konfiguracija aplikacije. Dok nalog nije spreman, zadržite `ONLINE_SESSIONS_PROVIDER=disabled`: priprema je dostupna, ali aplikacija jasno kaže da stvarni pozivi još nijesu uključeni.
 
 Nije potrebno ručno praviti Daily sobe. API ih pravi tek pri pokušaju ulaska. Koristite HTTPS ili localhost za kameru/mikrofon. Drugi uređaj koji otvara nezaštićeni LAN HTTP nema iste browser dozvole kao localhost.
 
 ## Tok koda i podataka
+
+`online-lobby.service.ts` i migracija **017-online-lobby** odvajaju čekanje od video veze. Tabela `online_session_lobbies` čuva verziju rezervacije, generaciju razgovora, nasumične oznake dva browser prisustva, posljednji heartbeat i odobreni početak. UI osvježava prisustvo na tri sekunde; ono ističe poslije 30 sekundi bez heartbeat-a. Provjere se izvršavaju na serveru. Zakašnjeli heartbeat poslije izlaska ne može ponovo uključiti spremnost. Drugi tab istog naloga ne može preuzeti svježe prisustvo ili odjaviti noviji tab.
+
+POST `bookings/:id/online-session/lobby/ready`, `/heartbeat`, `/start` i `/leave` koriste postojeću JWT/Origin zaštitu. `/start` je samo za vlasnika terapeuta i traži oba svježa prisustva. POST `/join` dodatno traži `presenceId` i `lobbyId` odobrenog razgovora; direktan poziv prije početka nema Daily nuspojave. Stara video soba se opoziva pri izlasku, isteku ili promjeni generacije. Poslije novog početka nastaje nova soba, bez prepravljanja istorije rezervacije. Ako browser nestane bez odjave, prekid nakon već pokrenutog poziva zavisi od isteka prisustva, radnika i mreže; to nije obećanje trenutnog prestanka naplate.
+
+Lokalna provjera 20. novembra 2026: domen `terapeutme.daily.co` i ključ su potvrđeni preko Daily API-ja; lokalni `/api/v1/health` vraća `onlineSessions: daily`. Privatna soba i tokeni provjereni su stvarnim REST pozivima. Kratak poziv preko aplikacije sa dva odvojena testna browser naloga potvrdio je video i zvuk u oba smjera, mute/unmute, kameru i izlazak. Korišćeni su vještački browser uređaji, bez pristupa stvarnoj kameri/mikrofonu računara. Testne sobe i nalozi su uklonjeni. Izvještaj bez ključeva/tokena ostaje lokalno u `.local/daily-live-report.json`; tajne su samo u ignorisanim lokalnim fajlovima. Render/Vercel nijesu mijenjani ovom provjerom.
 
 | Dio             | Fajl i odgovornost                                                                                                      |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +53,7 @@ Nije potrebno ručno praviti Daily sobe. API ih pravi tek pri pokušaju ulaska. 
 
 Pri `join` server provjerava stvarne učesnike. ADMIN nema automatski ulazak. GET ne vraća Daily URL/token. POST zahtijeva dozvoljeni Origin i JSON kao ostale privatne radnje. Odgovori koriste `Cache-Control: no-store`.
 
-Nasumična oznaka sobe vezana je za ID i verziju rezervacije; nema imena, emaila ili telefona u oznaci. Oznaka se prvo upisuje u kratkoj SQL naredbi, a mreža se čeka van transakcije. Session advisory lock sprečava istovremeno pravljenje/brisanje iste sobe. Drugi paralelni ulazak može dobiti poruku da pričeka nekoliko sekundi i ponovi pokušaj. Direktna PostgreSQL veza je potrebna za ove lock-ove, kao i za postojeće migracije; transaction-pooling veza nije odgovarajuća.
+Nasumična oznaka sobe vezana je za ID i verziju rezervacije i odobreni početak razgovora; nema imena, emaila ili telefona u oznaci. Oznaka se prvo upisuje u kratkoj SQL naredbi, a mreža se čeka van transakcije. Session advisory lock sprečava istovremeno pravljenje/brisanje iste sobe. Drugi paralelni ulazak čeka do osam sekundi prvo podešavanje sobe; duže čekanje vraća poruku za novi pokušaj. Direktna PostgreSQL veza je potrebna za ove lock-ove, kao i za postojeće migracije; transaction-pooling veza nije odgovarajuća.
 
 Token ima jednu sobu, pseudonim učesnika koji važi samo u toj sobi, rok i izbacivanje po isteku. Oba učesnika su bez vlasničkih/admin ovlašćenja. Snimanje, automatska transkripcija i čuvanje transkripta nijesu uključeni. Browser ne čuva token u URL-u, istoriji ili localStorage-u. Izlazak i promjena naloga uklanjaju medije, slušaoce i zakašnjele pokušaje ulaska.
 
@@ -65,3 +76,9 @@ Za budući AWS prelazak čuvamo naš ekran i provjere rezervacije. Mijenjaju se 
 Poslije povezivanja naloga ručno provjerite dva uređaja: oba smjera zvuka/videa, mute/unmute, promjenu kamere/mikrofona, dijeljenje/prekid ekrana, slušalice, kratki prekid mreže, ponovni ulazak, otkazivanje iz drugog taba i istek termina. Provjerite browser koji će klijenti stvarno koristiti, posebno iPhone/Safari. Ne uključujte snimanje ili AI dodatke na Daily domenu za ovu integraciju.
 
 Zvanična dokumentacija: [Daily call object](https://docs.daily.co/reference/daily-js/factory-methods/create-call-object), [kreiranje sobe](https://docs.daily.co/reference/rest-api/rooms/create-room), [meeting token](https://docs.daily.co/reference/rest-api/meeting-tokens/create-meeting-token), [izbacivanje](https://docs.daily.co/reference/rest-api/rooms/session/eject).
+
+### Provjera čekaonice bez troška video poziva
+
+`AUTH_E2E_LOBBY=1` uključuje isključivo testni provider ključ u browser runner-u. Pokrenite `npm run test:auth:e2e -- online-sessions.spec.ts --grep "waiting room stays"` sa tom varijablom (u PowerShell-u: `$env:AUTH_E2E_LOBBY='1'`). Test koristi stvarnu JWT prijavu, bazu i lobi, ali blokira video `/join` prije SDK-a. Dok oba učesnika čekaju, potvrđuje nula Daily zahtjeva, nula soba i nula video tokena. Klijent ne može pokrenuti razgovor; terapeut ne može prije spremnosti klijenta. Poslije terapeutovog početka oba browsera prvi put traže video pristup. Izlazak ponovo blokira početak. Bez te testne varijable ostale browser provjere i dalje koriste potpuno isključen video provider.
+
+Migracija 017 opoziva eventualne stare otvorene sobe koje nijesu vezane za novu čekaonicu; objavu treba planirati van aktivnih razgovora. Podaci rezervacija i njihova istorija ostaju sačuvani.
